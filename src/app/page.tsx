@@ -1,3 +1,4 @@
+import { Contact } from "@/components/contact";
 import { ExperienceLine } from "@/components/sections/experience-line";
 import styles from "@/components/sections/home.module.css";
 import { Projects } from "@/components/sections/projects";
@@ -9,6 +10,7 @@ export default function Home() {
       <TerminalHero />
       <ExperienceLine />
       <Projects />
+      <Contact />
     </div>
   );
 }

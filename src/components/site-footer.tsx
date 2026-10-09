@@ -12,6 +12,11 @@ export function SiteFooter() {
               About
             </Link>
           </li>
+          <li>
+            <Link href="/contact" className="hover:text-band-ink">
+              Contact
+            </Link>
+          </li>
         </ul>
       </div>
     </footer>

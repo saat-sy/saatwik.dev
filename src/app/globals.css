@@ -125,13 +125,6 @@ body:has(.black-sheet:not([hidden] *, [style*="display: none"] *)) > header nav 
     line-height: 1.4;
     font-variant-numeric: tabular-nums;
   }
-
-  /* Unbuilt content: drawn as construction lines until real copy lands. */
-  .construction {
-    color: var(--ink-faint);
-    border: 1px dashed var(--ink-faint);
-    padding: 0.75rem 1rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

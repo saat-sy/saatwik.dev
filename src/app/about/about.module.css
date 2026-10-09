@@ -1,0 +1,67 @@
+.page {
+  position: relative;
+  background: #000;
+  color: var(--ink);
+  min-height: 80dvh;
+  padding: 56px var(--gutter) 96px;
+  font-family: var(--font-barlow), sans-serif;
+}
+
+.sheet { max-width: 1240px; margin-inline: auto; }
+.intro { margin-bottom: 48px; padding-bottom: 28px; border-bottom: 1px solid var(--rule); }
+.intro h1 {
+  font-family: var(--font-martian), monospace;
+  font-size: clamp(2.4rem, 5.8vw, 4.8rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+.intro h1 span { color: var(--redline); }
+
+.layout { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 64px; }
+
+.story { max-width: 62ch; display: grid; gap: 24px; }
+.story p { color: var(--ink-soft); font-size: 1.1rem; line-height: 1.8; }
+.story .lead { color: var(--ink); font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.55; }
+.story a { color: var(--ink); text-decoration-line: underline; text-decoration-color: var(--rule); transition: color 180ms, text-decoration-color 180ms; }
+.story a:hover { color: var(--redline); text-decoration-color: var(--redline); }
+
+.label {
+  margin-bottom: 24px;
+  font-family: var(--font-martian), monospace;
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-variation-settings: "wdth" 87.5;
+  color: var(--ink-soft);
+}
+
+.education { display: grid; }
+.education li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 20px; padding-bottom: 32px; }
+.mark { position: relative; }
+.mark::before { content: ""; display: block; width: 7px; height: 7px; border: 1px solid var(--redline); margin-top: 8px; }
+.education li:not(:last-child) .mark::after { content: ""; position: absolute; top: 21px; bottom: -32px; left: 3px; width: 1px; background: var(--rule); }
+.education h3 { font-family: var(--font-martian), monospace; font-size: 0.9rem; font-weight: 400; letter-spacing: -0.03em; line-height: 1.5; }
+.education p { color: var(--ink-soft); font-size: 1rem; margin-top: 6px; }
+.meta {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--font-martian), monospace;
+  font-size: 0.6rem;
+  font-variation-settings: "wdth" 87.5;
+  line-height: 1.6;
+  color: var(--ink-faint);
+}
+.period { color: var(--redline); margin-top: 0 !important; margin-bottom: 8px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .intro { animation: arrive 500ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes arrive { from { transform: translateY(8px); } to { transform: translateY(0); } }
+}
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 56px; }
+}
+@media (max-width: 767px) {
+  .page { padding-top: 44px; padding-bottom: 64px; }
+  .intro { margin-bottom: 36px; }
+  .story p { font-size: 1.05rem; }
+}

@@ -12,7 +12,7 @@ export function Backdrop() {
   const still = useMedia("(prefers-reduced-motion: reduce)");
   const webgl = useWebGL();
   const idle = useIdle();
-  if (pathname === "/" || pathname.startsWith("/projects") || !webgl || !idle) return null;
+  if (pathname === "/" || pathname === "/about" || pathname === "/contact" || pathname.startsWith("/projects") || !webgl || !idle) return null;
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 blur-[3px]" aria-hidden>
       <BackdropCanvas still={still} />

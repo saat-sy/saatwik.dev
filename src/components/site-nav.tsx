@@ -16,12 +16,13 @@ const items: Item[] = [
   { href: "/#work", label: "Work", key: "work", section: "work", compact: true },
   { href: "/projects", label: "Projects", key: "projects", compact: true },
   { href: "/about", label: "About", key: "about", compact: false },
-  { href: "#contact", label: "Contact", key: "contact", section: "contact", compact: true },
+  { href: "/contact", label: "Contact", key: "contact", compact: true },
 ];
 
 function routeKey(pathname: string) {
   if (pathname.startsWith("/projects")) return "projects";
   if (pathname.startsWith("/about")) return "about";
+  if (pathname.startsWith("/contact")) return "contact";
   return null;
 }
 
@@ -36,9 +37,11 @@ export function SiteNav() {
   const [spy, setSpy] = useState<string | null>(null);
   const active = spy ?? routeKey(pathname);
 
-  // Which in-page section is in view: Work on the home page, Contact everywhere.
+  // Which in-page section is in view: Work on the home page.
   useGSAP(
     () => {
+      // A cached home page stays in the DOM, hidden, while other routes are shown.
+      if (pathname !== "/") return;
       const triggers = items
         .filter((item) => item.section)
         .map((item) => {
@@ -84,19 +87,25 @@ export function SiteNav() {
 
   useEffect(() => {
     placeMarker(true);
+    // A label scrambling on click changes width; keep the marker on its final size.
     const onResize = () => placeMarker(false);
+    const observer = new ResizeObserver(onResize);
+    links.current.forEach((link) => observer.observe(link));
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", onResize);
+    };
   }, [placeMarker]);
 
   function onClick(e: MouseEvent<HTMLAnchorElement>, item: Item) {
     const label = labels.current.get(item.key);
     if (label && !reduced()) {
-      gsap.to(label, { duration: 0.55, scrambleText: { text: item.label, chars: "01<>/_$#", speed: 0.7 }, ease: "none" });
+      gsap.to(label, { duration: 0.55, scrambleText: { text: item.label, chars: "01<>/_$#", speed: 0.7, tweenLength: false }, ease: "none" });
     }
-    if (!item.section) return;
+    if (!item.section || pathname !== "/") return; // another page: let the link navigate
     const target = document.getElementById(item.section);
-    if (!target) return; // another page: let the link navigate
+    if (!target) return;
     e.preventDefault();
     setSpy(item.key);
     history.replaceState(null, "", `#${item.section}`);

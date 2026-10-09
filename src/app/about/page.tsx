@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Construction } from "@/components/construction";
+import Link from "next/link";
 import { education, formatRange, person } from "@/content/site";
+import styles from "./about.module.css";
 
 export const metadata: Metadata = {
   title: "About",
@@ -9,32 +10,52 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-(--sheet-max) px-(--gutter) pb-24 pt-16">
-      <h1 className="font-display text-7xl font-semibold uppercase leading-[0.9] sm:text-8xl">About</h1>
+    <div className={`black-sheet ${styles.page}`}>
+      <div className={styles.sheet}>
+        <header className={styles.intro}>
+          <h1>about<span aria-hidden>_</span></h1>
+        </header>
 
-      <div className="mt-14 grid gap-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
-        <div className="max-w-[68ch] space-y-6">
-          <p className="text-2xl leading-snug text-ink">{person.tagline}</p>
-          <Construction note="personal story" lines={3} />
+        <div className={styles.layout}>
+          <div className={styles.story}>
+            <p className={styles.lead}>
+              I’m super interested in inference engineering. I like figuring out how to make models run well when the hardware is limited, the network is unpredictable and someone has to operate the thing once it is deployed.
+            </p>
+            <p>
+              At Meta, I worked on the disaster recovery drain tests. I built an agent that automated planning six weeks of upcoming simulations, including which regions to drain. I also built a system that shared high-risk services with the team before each test.
+            </p>
+            <p>
+              I then built an eval framework around those predictions. It compared them with the SEVs that actually came out of a drain, helped separate prediction misses from service onboarding gaps and gave the team a dashboard to look through past tests and individual incidents.
+            </p>
+            <p>
+              Before Meta, I worked on AWS deployment infrastructure and CI/CD, built an LLM pipeline for inventory automation and contributed Kotlin and Android functionality to Pocket Paint through Google Summer of Code.
+            </p>
+            <p>
+              Outside work, I maintain <Link href="/projects/dictate">Dictate</Link>, a native Android text-to-speech app with 90K+ installs.
+            </p>
+            <p>
+              Right now I am building <Link href="/projects/everygpu">EveryGPU</Link>, a distributed inference experiment across remote GPUs.
+            </p>
+          </div>
+
+          <section aria-labelledby="education-title">
+            <h2 id="education-title" className={styles.label}>education</h2>
+            <ol className={styles.education}>
+              {education.map((item) => (
+                <li key={item.school}>
+                  <span className={styles.mark} aria-hidden />
+                  <div>
+                    <p className={`${styles.meta} ${styles.period}`}>{formatRange(item.start, item.end)}</p>
+                    <h3>{item.school}</h3>
+                    <p>{item.degree}</p>
+                    {item.note ? <p>{item.note}</p> : null}
+                    <span className={styles.meta}>{item.place}</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
         </div>
-
-        <section aria-labelledby="education-title">
-          <h2 id="education-title" className="font-display text-3xl font-semibold uppercase">
-            Education
-          </h2>
-          <ol className="relative mt-8 space-y-10 border-l border-ink-faint pl-8">
-            {education.map((item) => (
-              <li key={item.school} className="relative">
-                <span className="absolute -left-[2.4rem] top-1.5 size-3 rotate-45 border-2 border-redline bg-sheet" aria-hidden />
-                <p className="lettering text-redline">{formatRange(item.start, item.end)}</p>
-                <p className="mt-1 font-display text-2xl font-semibold uppercase leading-tight">{item.school}</p>
-                <p className="text-ink-soft">{item.degree}</p>
-                {item.note ? <p className="text-ink-soft">{item.note}</p> : null}
-                <p className="lettering mt-1 text-ink-faint">{item.place}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
       </div>
     </div>
   );

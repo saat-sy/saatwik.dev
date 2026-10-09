@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow, Barlow_Condensed, IBM_Plex_Sans, Martian_Mono } from "next/font/google";
 import { Backdrop } from "@/components/backdrop";
-import { Contact } from "@/components/contact";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
 import { person } from "@/content/site";
@@ -66,7 +65,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main id="main" className="flex-1">
           {children}
         </main>
-        <Contact />
         <SiteFooter />
       </body>
     </html>

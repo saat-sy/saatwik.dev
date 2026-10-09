@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft, ArrowRight, ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -52,6 +52,17 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
           <h1 className="font-display text-7xl font-semibold uppercase leading-[0.88] sm:text-8xl xl:text-[10rem]">{project.name}</h1>
           <p className="mt-6 text-xl text-ink sm:text-2xl">{project.kind}</p>
           <p className="mt-2 max-w-[48ch] text-lg text-ink-soft">{project.summary}</p>
+          {project.liveUrl ? (
+            <a
+              href={project.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group mt-6 inline-flex items-center gap-2 border border-ink px-4 py-3 font-display text-lg font-semibold uppercase tracking-[0.02em] transition-colors duration-200 hover:bg-ink hover:text-sheet active:translate-y-px"
+            >
+              Try the live app
+              <ArrowUpRight size={18} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" aria-hidden />
+            </a>
+          ) : null}
         </div>
         <ModelFigure slug={project.slug} label={`3D line drawing representing ${project.name}`} className="aspect-square w-full max-lg:max-h-[60vh]" />
       </header>

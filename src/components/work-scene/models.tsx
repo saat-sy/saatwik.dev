@@ -299,13 +299,166 @@ function Dictate({ color }: { color: string }) {
   );
 }
 
+// A film strip stands behind an audio track. A redline playhead sweeps across
+// both: the waveform draws itself behind the playhead and swells with each
+// scene's mood, with the newest chunk (one streamed block) in redline.
+const TIMBRE_SCENES = 3;
+const TIMBRE_STROKES = 120;
+const TIMBRE_LIVE_STROKES = 5;
+const TIMBRE_SPAN = 1.9;
+const TIMBRE_STRIP_Z = -0.5;
+const TIMBRE_TRACK_Z = 0.25;
+const TIMBRE_TRACK_HEIGHT = 0.6;
+const TIMBRE_STRIP_LIFT = 0.7;
+const TIMBRE_MOOD = [0.08, 0.17, 0.27];
+const TIMBRE_SWEEP_SECONDS = 8;
+const TIMBRE_HOLD_SECONDS = 1.4;
+const TIMBRE_FRAME_WIDTH = 0.55;
+const TIMBRE_FRAME_STEP = TIMBRE_SPAN / TIMBRE_SCENES;
+const TIMBRE_FRAME_Y = 0.1;
+
+function timbreFrameX(scene: number) {
+  return -TIMBRE_SPAN / 2 + TIMBRE_FRAME_STEP * (scene + 0.5);
+}
+
+function timbreGlyph(scene: number): [number, number, number][] {
+  const pts: [number, number, number][] = [];
+  const steps = 24;
+  const amp = [0.03, 0.07, 0.13][scene];
+  const cycles = [1, 2, 4][scene];
+  for (let i = 0; i < steps; i++) {
+    const wave = (u: number) => (scene === 2 ? (Math.floor(u * cycles * 2) % 2 ? 1 : -1) * amp : Math.sin(u * cycles * Math.PI * 2) * amp);
+    const u0 = i / steps;
+    const u1 = (i + 1) / steps;
+    pts.push([-0.2 + u0 * 0.4, 0.2 + wave(u0), 0.02], [-0.2 + u1 * 0.4, 0.2 + wave(u1), 0.02]);
+  }
+  return pts;
+}
+
+/** Mood amplitude at position u (0..1) along the timeline, blended across scene cuts. */
+function timbreMood(u: number) {
+  const scaled = u * TIMBRE_SCENES;
+  const scene = Math.min(Math.floor(scaled), TIMBRE_SCENES - 1);
+  const edge = scaled - scene;
+  const next = TIMBRE_MOOD[Math.min(scene + 1, TIMBRE_SCENES - 1)];
+  return TIMBRE_MOOD[scene] + (next - TIMBRE_MOOD[scene]) * smooth((edge - 0.8) / 0.2);
+}
+
 function Timbre({ color }: { color: string }) {
-  const heights = [0.3, 0.7, 1.1, 0.6, 0.9, 1.3, 0.5, 0.8, 0.4];
+  const played = useRef<THREE.LineSegments>(null);
+  const live = useRef<THREE.LineSegments>(null);
+  const playhead = useRef<THREE.Group>(null);
+  const marker = useRef<THREE.Group>(null);
+  const note = useRef<THREE.Group>(null);
+  const sprockets = useMemo(() => {
+    const pts: [number, number, number][] = [];
+    for (let i = 0; i < 26; i++) {
+      const x = -0.97 + i * 0.077;
+      pts.push([x, 0.02, 0.012], [x, 0.06, 0.012], [x, 0.58, 0.012], [x, 0.62, 0.012]);
+    }
+    return pts;
+  }, []);
+  const playheadLines = useMemo<[number, number, number][]>(
+    () => [
+      [0, 0, TIMBRE_STRIP_Z], [0, TIMBRE_STRIP_LIFT + 0.75, TIMBRE_STRIP_Z],
+      [0, 0.045, TIMBRE_STRIP_Z], [0, 0.045, TIMBRE_TRACK_Z],
+      [0, 0, TIMBRE_TRACK_Z + 0.03], [0, TIMBRE_TRACK_HEIGHT, TIMBRE_TRACK_Z + 0.03],
+    ],
+    [],
+  );
+  const markerLines = useMemo<[number, number, number][]>(() => {
+    const hw = TIMBRE_FRAME_WIDTH / 2 + 0.04;
+    const y0 = TIMBRE_STRIP_LIFT + TIMBRE_FRAME_Y - 0.04;
+    const y1 = TIMBRE_STRIP_LIFT + TIMBRE_FRAME_Y + 0.44;
+    const z = TIMBRE_STRIP_Z + 0.03;
+    return [[-hw, y0, z], [hw, y0, z], [hw, y0, z], [hw, y1, z], [hw, y1, z], [-hw, y1, z], [-hw, y1, z], [-hw, y0, z]];
+  }, []);
+  const noteLines = useMemo(() => {
+    const pts: [number, number, number][] = [];
+    const steps = 14;
+    for (let i = 0; i < steps; i++) {
+      const a = (i / steps) * Math.PI * 2;
+      const b = ((i + 1) / steps) * Math.PI * 2;
+      pts.push([Math.cos(a) * 0.055, Math.sin(a) * 0.04, 0], [Math.cos(b) * 0.055, Math.sin(b) * 0.04, 0]);
+    }
+    pts.push([0.055, 0, 0], [0.055, 0.24, 0], [0.055, 0.24, 0], [0.13, 0.15, 0]);
+    return pts;
+  }, []);
+  const strokes = useMemo(() => {
+    const centerY = TIMBRE_TRACK_HEIGHT / 2;
+    const z = TIMBRE_TRACK_Z;
+    const positions = new Float32Array(TIMBRE_STROKES * 6);
+    for (let i = 0; i < TIMBRE_STROKES; i++) {
+      const u = (i + 0.5) / TIMBRE_STROKES;
+      const x = -TIMBRE_SPAN / 2 + u * TIMBRE_SPAN;
+      const texture = 0.45 + 0.55 * Math.abs(Math.sin(i * 0.9) * 0.6 + Math.sin(i * 2.7 + 1) * 0.4);
+      const h = Math.max(timbreMood(u) * texture, 0.012);
+      positions.set([x, centerY - h, z, x, centerY + h, z], i * 6);
+    }
+    const make = () => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      return g;
+    };
+    return { played: make(), live: make() };
+  }, []);
+
+  useFrame(({ clock }) => {
+    const t = (clock.elapsedTime + 4.5) % (TIMBRE_SWEEP_SECONDS + TIMBRE_HOLD_SECONDS);
+    const progress = Math.min(t / TIMBRE_SWEEP_SECONDS, 1);
+    const x = -TIMBRE_SPAN / 2 + progress * TIMBRE_SPAN;
+    if (playhead.current) playhead.current.position.x = x;
+    if (marker.current) marker.current.position.x = timbreFrameX(Math.min(Math.floor(progress * TIMBRE_SCENES), TIMBRE_SCENES - 1));
+    if (note.current) {
+      note.current.position.y = TIMBRE_TRACK_HEIGHT + 0.1 + Math.sin(clock.elapsedTime * 3) * 0.04;
+    }
+    const drawn = Math.floor(progress * TIMBRE_STROKES);
+    const liveStart = Math.max(drawn - TIMBRE_LIVE_STROKES, 0);
+    strokes.played.setDrawRange(0, liveStart * 2);
+    strokes.live.setDrawRange(liveStart * 2, (drawn - liveStart) * 2);
+  });
+
   return (
-    <group>
-      {heights.map((h, i) => (
-        <Block key={i} size={[0.1, h, 0.1]} position={[(i - 4) * 0.16, 0, 0]} color={color} />
-      ))}
+    <group position={[0, 0.05, 0]} scale={0.9}>
+      <Block size={[TIMBRE_SPAN + 0.2, 0.04, 1.3]} position={[0, 0, -0.05]} color={color} />
+      <group position={[0, 0.04, 0]}>
+        <Block size={[TIMBRE_SPAN + 0.05, 0.62, 0.02]} position={[0, TIMBRE_STRIP_LIFT, TIMBRE_STRIP_Z - 0.03]} color={color} />
+        {[-1, 1].map((side) => (
+          <Block key={side} size={[0.04, TIMBRE_STRIP_LIFT, 0.04]} position={[(side * TIMBRE_SPAN) / 2, 0, TIMBRE_STRIP_Z - 0.03]} color={color} />
+        ))}
+        <group position={[0, TIMBRE_STRIP_LIFT, TIMBRE_STRIP_Z]}>
+          <Lines points={sprockets} color={SOFT} />
+        </group>
+        {Array.from({ length: TIMBRE_SCENES }, (_, scene) => (
+          <group key={scene} position={[timbreFrameX(scene), TIMBRE_STRIP_LIFT + TIMBRE_FRAME_Y - 0.1, TIMBRE_STRIP_Z]}>
+            <Block size={[TIMBRE_FRAME_WIDTH, 0.4, 0.03]} position={[0, 0.1, 0]} color={color} />
+            <group position={[0, 0.1, 0]}>
+              <Lines points={timbreGlyph(scene)} color={SOFT} />
+            </group>
+          </group>
+        ))}
+        <group ref={marker}>
+          <Lines points={markerLines} color={RED} />
+        </group>
+        {/* An open frame, so the waveform reads from both sides as the model turns. */}
+        <mesh position={[0, TIMBRE_TRACK_HEIGHT / 2, TIMBRE_TRACK_Z]}>
+          <boxGeometry args={[TIMBRE_SPAN + 0.05, TIMBRE_TRACK_HEIGHT, 0.04]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          <Edges color={color} />
+        </mesh>
+        <lineSegments ref={played} geometry={strokes.played} frustumCulled={false}>
+          <lineBasicMaterial color={color} />
+        </lineSegments>
+        <lineSegments ref={live} geometry={strokes.live} frustumCulled={false}>
+          <lineBasicMaterial color={RED} />
+        </lineSegments>
+        <group ref={playhead}>
+          <Lines points={playheadLines} color={RED} />
+          <group ref={note} position={[0, TIMBRE_TRACK_HEIGHT + 0.1, TIMBRE_TRACK_Z + 0.03]}>
+            <Lines points={noteLines} color={RED} />
+          </group>
+        </group>
+      </group>
     </group>
   );
 }

@@ -35,14 +35,14 @@ export const diagrams: Record<string, Diagram> = {
     footnote: "Built for handwritten assignments and refined through user feedback over 5+ years in production.",
   },
   timbre: {
-    title: "Video in, music out, in real time",
+    title: "From video to a live score",
     steps: [
-      { label: "Browser", note: "React and Next.js client" },
-      { label: "Stream", note: "WebSockets, both directions" },
-      { label: "Backend", note: "FastAPI video-to-music service" },
-      { label: "Soundtrack", note: "streamed back to the player" },
+      { label: "Video", note: "uploaded by the viewer" },
+      { label: "Scene + transcript", note: "representative frames and dialogue" },
+      { label: "Musical plan", note: "Groq and Llama set the prompt and mood" },
+      { label: "Live score", note: "streamed over WebSockets, buffered for playback" },
     ],
-    links: [{}, { label: "under 2 s end to end", hot: true }, {}],
-    footnote: "Latency held under two seconds across concurrent sessions.",
+    links: [{}, {}, { label: "new audio chunk every 2 s", hot: true }],
+    footnote: "Timbre is live at timbreapp.tech, with sub-two-second end-to-end latency.",
   },
 };

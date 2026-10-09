@@ -158,6 +158,8 @@ export type Project = {
   points: string[];
   metrics: Metric[];
   stack: string[];
+  /** A published app or demo, when the project has one. */
+  liveUrl?: string;
   /** Written when the project interview has supplied a real narrative. */
   caseStudy?: CaseStudySection[];
 };
@@ -249,14 +251,36 @@ export const projects: Project[] = [
     kind: "AI video soundtracking platform",
     start: "2025-09",
     end: "2025-10",
-    summary: "Streams generated music that follows a video in real time.",
+    summary: "Analyzes a video’s scenes and dialogue, then streams a score that follows its mood in real time.",
     points: [
-      "Built a real-time video-to-music streaming backend with FastAPI and WebSockets and a React and Next.js frontend, maintaining sub-two-second end-to-end latency across concurrent sessions.",
+      "Built a video-to-music system that detects scenes, samples each scene’s middle frame, and pairs those images with a transcript for multimodal analysis.",
+      "Used Groq and a Llama model to turn the video analysis into a music prompt and mood direction for every scene.",
+      "Connected the client, backend, and real-time music API with WebSockets, streaming a new audio chunk every two seconds and handling buffering for continuous playback.",
+      "Built the live experience end to end, coordinating scene analysis, transcription, prompt generation, streaming, buffering, and playback at sub-two-second latency.",
     ],
     metrics: [
       { label: "End-to-end latency", after: { value: 2, unit: "s", display: "< 2 s" } },
     ],
-    stack: ["FastAPI", "WebSockets", "React", "Next.js"],
+    stack: ["FastAPI", "WebSockets", "Groq", "Google Lyria", "React", "Next.js"],
+    liveUrl: "https://timbreapp.tech",
+    caseStudy: [
+      {
+        heading: "Why I built it",
+        body: "A score can completely change how a video feels. When I saw that real-time music APIs made immediate generation possible, I wanted to make it possible for any video to receive a background score without treating music as a slow export step.",
+      },
+      {
+        heading: "How it works",
+        body: "Timbre detects scenes and analyzes the transcript in parallel. It selects a representative frame from every scene, then sends those images and the transcript to Groq and a Llama model to determine the prompt and mood for the music. The client, backend, and real-time music API stay connected over WebSockets while the score streams back in two-second chunks.",
+      },
+      {
+        heading: "The hard part",
+        body: "The challenge was connecting the moving parts into one coherent experience. Scene detection, transcription, multimodal prompting, streaming, buffering, and playback all had to work together closely enough that the user hears a continuous score instead of a collection of separate systems.",
+      },
+      {
+        heading: "Proof in the scene",
+        body: "The moment it clicked was using an Avengers: Infinity War fight scene and hearing Timbre generate a score that matched the action. Timbre is live today, so the project is more than a technical pipeline: it is an experience people can try.",
+      },
+    ],
   },
 ];
 

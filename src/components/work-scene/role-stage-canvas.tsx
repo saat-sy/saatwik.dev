@@ -5,8 +5,10 @@ import { useRef } from "react";
 import type * as THREE from "three";
 import { GROUND, INK, Model } from "./models";
 
-// Every role's model sits on one turntable; the active one rises into place
-// while the previous one sinks away.
+// Every role's model sits on one swaying stage (never far enough to show a
+// back); the active one rises into place while the previous one sinks away.
+
+const SWAY = 0.5;
 
 function Slot({ slug, active, still }: { slug: string; active: boolean; still: boolean }) {
   const ref = useRef<THREE.Group>(null);
@@ -28,11 +30,11 @@ function Slot({ slug, active, still }: { slug: string; active: boolean; still: b
 
 function Turntable({ slugs, active, still }: { slugs: string[]; active: string; still: boolean }) {
   const ref = useRef<THREE.Group>(null);
-  useFrame((_, delta) => {
-    if (ref.current && !still) ref.current.rotation.y += delta * 0.22;
+  useFrame(({ clock }) => {
+    if (ref.current && !still) ref.current.rotation.y = Math.sin(clock.elapsedTime * 0.4) * SWAY;
   });
   return (
-    <group ref={ref} rotation={[0, -0.6, 0]}>
+    <group ref={ref}>
       {slugs.map((slug) => (
         <Slot key={slug} slug={slug} active={slug === active} still={still} />
       ))}

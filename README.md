@@ -31,6 +31,7 @@ Other scripts:
 npm run build      # production build (also type-checks)
 npm run start      # serve the production build
 npm run lint       # ESLint
+npm run test       # Vitest: negotiation, proxy, API, OpenAPI, Markdown, discovery files
 ```
 
 No environment variables or API keys are needed.
@@ -53,6 +54,7 @@ All facts live in a few typed files, so content changes rarely touch components.
 | Jobs and leadership roles, with metrics | `src/content/site.ts` (`experience`, `leadership`) |
 | Projects, each with a case-study page | `src/content/site.ts` (`projects`); set `status` (building, shipped, or archived), `featured` (home page), and `caseStudy` |
 | Education | `src/content/site.ts` (`education`) |
+| About, contact and privacy prose | `src/content/pages.ts` (shared by the HTML pages, the Markdown renderings and the API) |
 | "How it works" diagram per project | `src/content/diagrams.ts` |
 | 3D model per role or project | `src/components/work-scene/models.tsx` (keyed by slug) |
 | Terminal commands in the hero | `src/components/terminal/commands.tsx` |
@@ -66,7 +68,7 @@ Availability ("open to full-time roles") is shown only when a visitor runs `cat 
 
 ```
 src/
-  app/                   routes: home, /projects, /projects/[slug], /about
+  app/                   routes: home, /projects, /projects/[slug], /about, /contact, /privacy, /api, /md
                          plus layout, template (page transitions), metadata, sitemap, robots, OG image, icon
   components/
     terminal/            the working shell in the hero
@@ -77,8 +79,25 @@ src/
     site-nav.tsx         nav with sliding marker and click animations
     contact.tsx          contact band and its short form
   content/               all site data (see Editing content)
-  lib/                   GSAP registration, media and viewport hooks
+  lib/                   GSAP registration, media and viewport hooks; Markdown, API, OpenAPI and llms.txt builders
+  proxy.ts               Accept: text/markdown negotiation and API method handling
+tests/                   Vitest suites
 ```
+
+## For agents
+
+Everything is readable without a browser, from the same content as the pages.
+
+| What | Where |
+| --- | --- |
+| Any page as Markdown: send `Accept: text/markdown` to its normal URL (the response has `Vary: Accept`; unknown paths get a Markdown 404) | `src/proxy.ts` rewrites to `src/app/md/[[...path]]`, rendered by `src/lib/markdown.ts` |
+| Read-only JSON API: `/api`, `/api/profile`, `/api/experience`, `/api/projects`, `/api/projects/{slug}`; every error is `{"error": {status, code, message, hint, documentation}}` | `src/app/api/`, `src/lib/api.ts` |
+| OpenAPI 3.1 description of the API at `/openapi.json` | `src/lib/openapi.ts` |
+| Guide for agents, with when-to-use, at `/llms.txt` | `src/lib/llms.ts` |
+| RFC 9727 API catalog at `/.well-known/api-catalog` | `src/app/.well-known/api-catalog/route.ts` |
+| schema.org JSON-LD on the home page | `src/lib/structured-data.ts` |
+
+When you add an endpoint, add it to `src/lib/openapi.ts`, `apiIndex()` in `src/lib/api.ts` and `src/lib/llms.ts`; the tests fail if the spec and the responses disagree. A new page needs an entry in `markdownFor()` and `src/app/sitemap.ts`.
 
 ## Motion and accessibility
 

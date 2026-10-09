@@ -19,20 +19,19 @@
 .intro h1 span { color: var(--redline); }
 .intro > p { margin-top: 20px; max-width: 56ch; color: var(--ink-soft); font-size: 1.15rem; }
 
-.email {
+.path {
   display: block;
   width: fit-content;
   max-width: 100%;
+  padding: 8px 12px;
+  border: 1px dashed var(--rule);
   font-family: var(--font-martian), monospace;
-  font-size: clamp(1.1rem, 3.2vw, 2.2rem);
-  letter-spacing: -0.04em;
-  line-height: 1.4;
+  font-size: clamp(0.85rem, 2.4vw, 1.25rem);
+  letter-spacing: -0.03em;
+  line-height: 1.5;
+  color: var(--ink-faint);
   overflow-wrap: anywhere;
-  text-decoration-line: underline;
-  text-decoration-color: var(--rule);
-  transition: color 180ms, text-decoration-color 180ms;
 }
-.email:hover { color: var(--redline); text-decoration-color: var(--redline); }
 
 .links { display: flex; flex-wrap: wrap; gap: 0 32px; margin-top: 32px; }
 .links a {
@@ -44,16 +43,12 @@
   font-size: 0.7rem;
   font-variation-settings: "wdth" 87.5;
   line-height: 1.7;
-  color: var(--redline);
+  color: var(--ink);
+  transition: color 180ms;
 }
+.links a:hover { color: var(--redline); }
 .links svg { transition: transform 180ms; }
-.links a:hover svg { transform: translate(2px, -2px); }
-
-.notes { margin-top: 40px; max-width: 62ch; display: grid; gap: 20px; }
-.notes p { color: var(--ink-soft); font-size: 1.1rem; line-height: 1.8; }
-
-.status { margin-top: 48px; font-family: var(--font-martian), monospace; font-size: 0.7rem; font-variation-settings: "wdth" 87.5; color: var(--ink-faint); }
-.status span { color: var(--redline); }
+.links a:hover svg { transform: translateX(4px); }
 
 @media (prefers-reduced-motion: no-preference) {
   .intro { animation: arrive 500ms cubic-bezier(0.16, 1, 0.3, 1) both; }
@@ -63,5 +58,4 @@
   .page { padding-top: 44px; padding-bottom: 64px; }
   .intro { margin-bottom: 36px; }
   .intro > p { font-size: 1rem; }
-  .notes p { font-size: 1.05rem; }
 }

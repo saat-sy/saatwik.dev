@@ -1,5 +1,7 @@
 import { ArrowUpRight, DownloadSimple } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
+import { Prose } from "@/components/prose";
+import { contactParagraphs } from "@/content/pages";
 import { person } from "@/content/site";
 import styles from "./contact.module.css";
 
@@ -30,6 +32,14 @@ export default function ContactPage() {
             <a href={person.links.github} target="_blank" rel="noopener noreferrer">GitHub <ArrowUpRight size={16} aria-hidden /></a>
           </li>
         </ul>
+
+        <div className={styles.notes}>
+          {contactParagraphs.map((paragraph, i) => (
+            <p key={i}>
+              <Prose paragraph={paragraph} />
+            </p>
+          ))}
+        </div>
 
         <p className={styles.status}><span>*</span> {person.availability} · {person.location}</p>
       </div>

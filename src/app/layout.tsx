@@ -4,7 +4,7 @@ import { Barlow, Barlow_Condensed, IBM_Plex_Sans, Martian_Mono } from "next/font
 import { Backdrop } from "@/components/backdrop";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
-import { person } from "@/content/site";
+import { person, siteUrl } from "@/content/site";
 import "./globals.css";
 
 const barlow = Barlow({
@@ -34,12 +34,13 @@ const martian = Martian_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://saatwik.dev"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: `${person.name}, infrastructure and product engineer`,
     template: `%s | ${person.name}`,
   },
   description: person.tagline,
+  alternates: { canonical: "./" },
   openGraph: {
     type: "website",
     siteName: "saatwik.dev",

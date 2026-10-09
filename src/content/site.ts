@@ -1,5 +1,7 @@
 // Facts on this site come from Saatwik's resume and project interviews.
 
+export const siteUrl = "https://saatwik.dev";
+
 export const person = {
   name: "Saatwik Yajaman",
   shortName: "Saatwik",

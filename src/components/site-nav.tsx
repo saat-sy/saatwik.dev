@@ -11,19 +11,17 @@ import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 
 type Item = { href: string; label: string; key: string; section?: string; compact: boolean };
 
-// About and Writing collapse into the footer on the narrowest screens.
+// About collapses into the footer on the narrowest screens.
 const items: Item[] = [
   { href: "/#work", label: "Work", key: "work", section: "work", compact: true },
   { href: "/projects", label: "Projects", key: "projects", compact: true },
   { href: "/about", label: "About", key: "about", compact: false },
-  { href: "/blog", label: "Writing", key: "writing", compact: false },
   { href: "#contact", label: "Contact", key: "contact", section: "contact", compact: true },
 ];
 
 function routeKey(pathname: string) {
   if (pathname.startsWith("/projects")) return "projects";
   if (pathname.startsWith("/about")) return "about";
-  if (pathname.startsWith("/blog")) return "writing";
   return null;
 }
 

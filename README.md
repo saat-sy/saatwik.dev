@@ -10,7 +10,6 @@ Personal portfolio of Saatwik S Yajaman. A minimal, terminal-black site with a w
 | Styling | Tailwind CSS v4, design tokens in `src/app/globals.css` |
 | 2D motion | [GSAP](https://gsap.com) with ScrollTrigger, DrawSVG, ScrollTo, ScrambleText (via `@gsap/react`) |
 | 3D | [three.js](https://threejs.org) via React Three Fiber and drei |
-| Writing | MDX via `@next/mdx` |
 | Icons | Phosphor |
 | Fonts | Barlow, Barlow Condensed, Martian Mono, IBM Plex Sans (self-hosted by `next/font`) |
 | Hosting | Vercel |
@@ -56,7 +55,6 @@ All facts live in a few typed files, so content changes rarely touch components.
 | Education | `src/content/site.ts` (`education`) |
 | "How it works" diagram per project | `src/content/diagrams.ts` |
 | 3D model per role or project | `src/components/work-scene/models.tsx` (keyed by slug) |
-| Blog posts | add `src/content/blog/<slug>.mdx` and register it in `src/content/blog/index.ts` |
 | Terminal commands in the hero | `src/components/terminal/commands.tsx` |
 | Contact band copy | `src/components/contact.tsx` |
 
@@ -68,11 +66,11 @@ Availability ("open to full-time roles") is shown only when a visitor runs `cat 
 
 ```
 src/
-  app/                   routes: home, /projects, /projects/[slug], /about, /blog, /blog/[slug]
+  app/                   routes: home, /projects, /projects/[slug], /about
                          plus layout, template (page transitions), metadata, sitemap, robots, OG image, icon
   components/
     terminal/            the working shell in the hero
-    sections/            home page sections (Work line, Projects, Writing)
+    sections/            home page sections (Work line, Projects)
     work-scene/          3D: models, Work stage, project model viewer
     backdrop/            the faint, blurred 3D background on every page
     drafting/            dimension lines, metric drawings, flow diagrams, scroll plotting

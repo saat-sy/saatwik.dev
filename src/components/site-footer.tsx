@@ -12,11 +12,6 @@ export function SiteFooter() {
               About
             </Link>
           </li>
-          <li>
-            <Link href="/blog" className="hover:text-band-ink">
-              Writing
-            </Link>
-          </li>
         </ul>
       </div>
     </footer>

@@ -24,15 +24,15 @@ export const diagrams: Record<string, Diagram> = {
       "An evaluator records server-queue wait, per-shard prefill and decode, transport overhead, and end-to-end latency. Next: direct peer-to-peer transport, n GPUs by m shards, and recovery from unreliable nodes.",
   },
   dictate: {
-    title: "From any text to background speech",
+    title: "From study material to paced dictation",
     steps: [
-      { label: "Text in", note: "typed, files, or camera via Google Vision OCR" },
-      { label: "Library", note: "local SQLite storage" },
-      { label: "TTS engine", note: "long-running playback" },
-      { label: "Background", note: "keeps reading with the app closed" },
+      { label: "Study material", note: "PDF, photo OCR, or direct text" },
+      { label: "Draft", note: "typed text auto-saves in real time" },
+      { label: "TTS", note: "reads one sentence at a time" },
+      { label: "Writing pace", note: "adjust sentence length and pause duration" },
     ],
-    links: [{}, {}, { hot: true }],
-    footnote: "Maintained in production for 5+ years: 90K+ installs, 5K+ monthly users.",
+    links: [{}, {}, { label: "pause, write, continue", hot: true }],
+    footnote: "Built for handwritten assignments and refined through user feedback over 5+ years in production.",
   },
   timbre: {
     title: "Video in, music out, in real time",

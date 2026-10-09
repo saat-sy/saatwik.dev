@@ -144,22 +144,157 @@ function EveryGpu({ color }: { color: string }) {
   );
 }
 
+// A phone speaks one sentence (sound waves sweep across the page), then
+// pauses while a pencil writes that line and glides to the next.
+const DICTATE_SHEET = { x: 0.35, z: 0.2, width: 1.5, depth: 1.1 };
+const DICTATE_PHONE_X = -0.95;
+const DICTATE_LINE_OFFSETS = [-0.33, -0.11, 0.11, 0.33];
+const DICTATE_LINE_LENGTHS = [1.1, 0.92, 1.12, 0.66];
+const DICTATE_WORDS: [number, number][] = [[0, 0.38], [0.44, 0.72], [0.78, 1]];
+const DICTATE_LINE_START = DICTATE_SHEET.x - 0.58;
+const DICTATE_SENTENCE_SECONDS = 3.2;
+const DICTATE_SPEAK_SHARE = 0.33;
+const DICTATE_HOLD_SECONDS = 1.4;
+const DICTATE_WAVES = 3;
+const DICTATE_WAVE_SECONDS = 1.3;
+const DICTATE_LIFT = 0.24;
+
+function smooth(x: number) {
+  const t = Math.min(Math.max(x, 0), 1);
+  return t * t * (3 - 2 * t);
+}
+
 function Dictate({ color }: { color: string }) {
+  const waves = useRef<(THREE.Group | null)[]>([]);
+  const speaking = useRef<THREE.Mesh>(null);
+  const pencil = useRef<THREE.Group>(null);
+  const written = useRef<(THREE.Group | null)[]>([]);
+  const arc = useMemo(() => {
+    const pts: [number, number, number][] = [];
+    const steps = 20;
+    for (let i = 0; i < steps; i++) {
+      const a = -1 + (i / steps) * 2;
+      const b = -1 + ((i + 1) / steps) * 2;
+      pts.push([Math.cos(a), 0, Math.sin(a)], [Math.cos(b), 0, Math.sin(b)]);
+    }
+    return pts;
+  }, []);
+  const arcGeometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(arc.map((q) => new THREE.Vector3(...q))), [arc]);
+  const ruling = useMemo(() => {
+    const pts: [number, number, number][] = [];
+    DICTATE_LINE_OFFSETS.forEach((z) => pts.push([-0.62, 0.0, z], [0.62, 0.0, z]));
+    return pts;
+  }, []);
+  const pencilStart = useMemo(() => new THREE.Vector3(), []);
+  const pencilEnd = useMemo(() => new THREE.Vector3(), []);
+
+  useFrame(({ clock }) => {
+    const sentences = DICTATE_LINE_OFFSETS.length;
+    const active = sentences * DICTATE_SENTENCE_SECONDS;
+    const t = (clock.elapsedTime + 1.7) % (active + DICTATE_HOLD_SECONDS);
+    const reading = t < active;
+    const index = reading ? Math.floor(t / DICTATE_SENTENCE_SECONDS) : sentences - 1;
+    const seconds = reading ? t - index * DICTATE_SENTENCE_SECONDS : DICTATE_SENTENCE_SECONDS;
+    const local = seconds / DICTATE_SENTENCE_SECONDS;
+    const lineZ = (i: number) => DICTATE_SHEET.z + DICTATE_LINE_OFFSETS[i];
+
+    waves.current.forEach((wave, k) => {
+      if (!wave) return;
+      const age = seconds - k * 0.28;
+      const alive = reading && age >= 0 && age < DICTATE_WAVE_SECONDS;
+      wave.visible = alive;
+      if (!alive) return;
+      const life = age / DICTATE_WAVE_SECONDS;
+      const r = 0.2 + 1.75 * life;
+      wave.scale.set(r, 1, r);
+      ((wave.children[0] as THREE.LineSegments).material as THREE.LineBasicMaterial).opacity = 1 - life;
+    });
+    if (speaking.current) speaking.current.visible = reading && local < DICTATE_SPEAK_SHARE;
+
+    written.current.forEach((group, i) => {
+      if (!group) return;
+      const p = !reading || i < index ? 1 : i === index ? smooth((local - DICTATE_SPEAK_SHARE) / (1 - DICTATE_SPEAK_SHARE - 0.07)) : 0;
+      group.scale.x = Math.max(p, 0.001);
+    });
+
+    if (pencil.current) {
+      const rest = pencilEnd.set(DICTATE_SHEET.x + 0.5, DICTATE_LIFT, lineZ(0) - 0.05);
+      const from = index === 0 ? rest : pencilStart.set(DICTATE_LINE_START + DICTATE_LINE_LENGTHS[index - 1], DICTATE_LIFT, lineZ(index - 1));
+      const writeP = smooth((local - DICTATE_SPEAK_SHARE) / (1 - DICTATE_SPEAK_SHARE - 0.07));
+      if (!reading) {
+        pencil.current.position.set(DICTATE_LINE_START + DICTATE_LINE_LENGTHS[sentences - 1], DICTATE_LIFT, lineZ(sentences - 1));
+      } else if (local < DICTATE_SPEAK_SHARE) {
+        const glide = smooth(local / DICTATE_SPEAK_SHARE);
+        pencil.current.position.set(
+          from.x + (DICTATE_LINE_START - from.x) * glide,
+          DICTATE_LIFT,
+          from.z + (lineZ(index) - from.z) * glide,
+        );
+      } else {
+        pencil.current.position.set(DICTATE_LINE_START + writeP * DICTATE_LINE_LENGTHS[index], 0.045 + (1 - Math.min(writeP * 8, 1)) * DICTATE_LIFT, lineZ(index));
+      }
+    }
+  });
+
   return (
-    <group rotation={[0, -0.4, 0]}>
-      <Block size={[0.8, 1.5, 0.08]} position={[0, 0, 0]} color={color} />
-      <Lines
-        points={[
-          [-0.3, 0.25, 0.05], [0.3, 0.25, 0.05],
-          [0.3, 0.25, 0.05], [0.3, 1.3, 0.05],
-          [0.3, 1.3, 0.05], [-0.3, 1.3, 0.05],
-          [-0.3, 1.3, 0.05], [-0.3, 0.25, 0.05],
-          [-0.2, 1.05, 0.05], [0.2, 1.05, 0.05],
-          [-0.2, 0.9, 0.05], [0.15, 0.9, 0.05],
-          [-0.2, 0.75, 0.05], [0.2, 0.75, 0.05],
-        ]}
-        color={SOFT}
-      />
+    <group position={[0, 0.5, 0]} scale={1.05}>
+      <group position={[DICTATE_PHONE_X, 0, DICTATE_SHEET.z]} rotation={[0, Math.PI / 2, 0]}>
+        <Block size={[0.5, 0.9, 0.06]} color={color} />
+        <Lines points={[[-0.14, 0.62, 0.031], [0.14, 0.62, 0.031], [-0.14, 0.48, 0.031], [0.08, 0.48, 0.031], [-0.14, 0.34, 0.031], [0.14, 0.34, 0.031]]} color={SOFT} />
+        <mesh ref={speaking} position={[0, 0.2, 0.034]}>
+          <boxGeometry args={[0.3, 0.035, 0.006]} />
+          <meshBasicMaterial color={RED} />
+        </mesh>
+      </group>
+      {Array.from({ length: DICTATE_WAVES }, (_, k) => (
+        <group
+          key={k}
+          ref={(g) => {
+            waves.current[k] = g;
+          }}
+          position={[DICTATE_PHONE_X + 0.05, 0.06, DICTATE_SHEET.z]}
+          visible={false}
+        >
+          <lineSegments geometry={arcGeometry}>
+            <lineBasicMaterial color={RED} transparent />
+          </lineSegments>
+        </group>
+      ))}
+      <group position={[DICTATE_SHEET.x, 0, DICTATE_SHEET.z]}>
+        <Block size={[DICTATE_SHEET.width, 0.04, DICTATE_SHEET.depth]} color={color} />
+        <group position={[0, 0.042, 0]}>
+          <Lines points={ruling} color={SOFT} />
+        </group>
+      </group>
+      {DICTATE_LINE_OFFSETS.map((offset, i) => (
+        <group
+          key={offset}
+          ref={(g) => {
+            written.current[i] = g;
+          }}
+          position={[DICTATE_LINE_START, 0.05, DICTATE_SHEET.z + offset]}
+        >
+          {DICTATE_WORDS.map(([from, to]) => (
+            <mesh key={from} position={[((from + to) / 2) * DICTATE_LINE_LENGTHS[i], 0, 0]}>
+              <boxGeometry args={[(to - from) * DICTATE_LINE_LENGTHS[i], 0.012, 0.022]} />
+              <meshBasicMaterial color={color} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      <group ref={pencil}>
+        <group rotation={[-0.3, 0, -0.5]}>
+          <mesh position={[0, 0.06, 0]} rotation={[Math.PI, 0, 0]}>
+            <coneGeometry args={[0.03, 0.12, 6]} />
+            <meshBasicMaterial color={RED} />
+          </mesh>
+          <mesh position={[0, 0.52, 0]}>
+            <cylinderGeometry args={[0.03, 0.03, 0.8, 6]} />
+            <meshBasicMaterial color={GROUND} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+            <Edges color={color} />
+          </mesh>
+        </group>
+      </group>
     </group>
   );
 }

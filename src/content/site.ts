@@ -209,10 +209,12 @@ export const projects: Project[] = [
     kind: "Text-to-speech Android app",
     start: "2020-05",
     end: "present",
-    summary: "A native Android app I founded and have run in production for over five years.",
+    summary: "An Android study companion that turns PDFs, photos, and typed text into adjustable, paced dictation.",
     points: [
-      "Founded and scaled a native Android app to 90K+ installs and 5K+ MAU over 5+ years, owning production maintenance, live debugging and iteration on user feedback.",
-      "Engineered long-running TTS playback with background execution and multi-source text ingestion through Google Vision OCR and local SQLite backed storage.",
+      "Built a native Android app that accepts PDFs, photos, and direct text, then turns the material into sentence-by-sentence dictation for students writing by hand.",
+      "Designed paced text-to-speech playback that reads a sentence, pauses for writing, and continues, with adjustable sentence length and pause duration.",
+      "Added real-time auto-save for typed material after a user reported losing their notes, and continued refining the app through reviews, feature requests, and bug reports.",
+      "Maintained and scaled the app to 90K+ installs and 5K+ monthly active users across more than five years in production.",
     ],
     metrics: [
       { label: "Installs", after: { value: 90_000, unit: "+", display: "90K+" } },
@@ -220,6 +222,24 @@ export const projects: Project[] = [
       { label: "Years in production", after: { value: 5, unit: "+", display: "5+" } },
     ],
     stack: ["Kotlin", "Android", "Google Vision OCR", "SQLite"],
+    caseStudy: [
+      {
+        heading: "Why I built it",
+        body: "In India, students often receive assignments that require copying source material by hand. I knew the routine of asking a parent to dictate line by line while I wrote. Dictate began as a way to automate that routine when there was no app built for it.",
+      },
+      {
+        heading: "How it helps students",
+        body: "A student can add a PDF, take photos of a textbook, or type material directly into the app. Dictate reads one sentence at a time, pauses so the student can write, then continues. Both sentence length and pause duration can be adjusted to match the student's pace.",
+      },
+      {
+        heading: "How feedback shaped it",
+        body: "User feedback has guided the app's evolution. When a user reported that their notes had disappeared before they could start dictation, I added real-time auto-save so typed material is saved as it is entered. Reviews and bug reports have continued to shape new features and fixes.",
+      },
+      {
+        heading: "What keeps it going",
+        body: "Dictate has been in production for more than five years, reaching 90K+ installs and 5K+ monthly active users. I still receive reviews from people using it today, which keeps the work grounded in a real problem rather than a one-time project.",
+      },
+    ],
   },
   {
     slug: "timbre",

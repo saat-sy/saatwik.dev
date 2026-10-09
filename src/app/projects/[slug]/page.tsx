@@ -35,7 +35,6 @@ async function ProjectDetail({ params }: Pick<PageProps<"/projects/[slug]">, "pa
     { id: "overview", heading: "What it does" },
     ...project.caseStudy.map((section, i) => ({ id: `chapter-${i + 1}`, heading: section.heading })),
     ...(diagram ? [{ id: "system", heading: "How it works" }] : []),
-    ...(project.metrics.length ? [{ id: "numbers", heading: "By the numbers" }] : []),
   ];
 
   return (
@@ -53,6 +52,7 @@ async function ProjectDetail({ params }: Pick<PageProps<"/projects/[slug]">, "pa
               {project.repoUrl ? <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" className={styles.action}>View the source <ArrowUpRight size={16} aria-hidden /></a> : null}
             </div>
           </div>
+          <div className={styles.caseCover}><ProjectCover project={project} /></div>
         </header>
 
         <dl className={styles.specs}>
@@ -79,7 +79,6 @@ async function ProjectDetail({ params }: Pick<PageProps<"/projects/[slug]">, "pa
             ))}
             {diagram ? <section id="system" className={styles.caseSection}>
               <h2>How it works</h2>
-              <div className={styles.caseDiagram}><ProjectCover project={project} /></div>
               <ol className={styles.pipeline} aria-label={diagram.title}>
                 {diagram.steps.map((step, i) => <li key={step.label}>
                   <span className={styles.pipelineMark} aria-hidden />
@@ -87,12 +86,6 @@ async function ProjectDetail({ params }: Pick<PageProps<"/projects/[slug]">, "pa
                 </li>)}
               </ol>
               {diagram.footnote ? <p className={styles.footnote}>{diagram.footnote}</p> : null}
-            </section> : null}
-            {project.metrics.length ? <section id="numbers" className={styles.caseSection}>
-              <h2>By the numbers</h2>
-              <dl className={styles.metrics}>{project.metrics.map((metric) => <div key={metric.label}>
-                <dt>{metric.label}</dt><dd>{metric.after.display}{metric.before ? <small>From {metric.before.display}</small> : null}</dd>
-              </div>)}</dl>
             </section> : null}
             <Link href={`/projects/${next.slug}`} className={styles.next}>
               <span><span className={styles.nextLabel}>Next project</span><strong>{next.name}</strong></span><ArrowRight size={24} aria-hidden />

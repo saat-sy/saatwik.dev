@@ -25,24 +25,25 @@ export function Label({ x, y, children, accent = false, anchor = "middle" }: { x
   return <text x={x} y={y} textAnchor={anchor} className={accent ? styles.coverLabelAccent : styles.coverLabel}>{children}</text>;
 }
 
-function GPU({ x, y }: { x: number; y: number }) {
+function Machine({ x, y }: { x: number; y: number }) {
   return <g transform={`translate(${x} ${y})`}>
-    <rect x="-53" y="-39" width="106" height="78" fill="#000" />
-    <rect x="-34" y="-23" width="42" height="42" />
-    <circle cx="-13" cy="-2" r="13" className={styles.coverLines} />
-    <path className={styles.coverLines} d="M19-23h18M19-12h18M19-1h18M19 10h18M-35 30h70" />
+    <rect x="-24" y="-17" width="48" height="32" fill="#000" />
+    <rect x="-13" y="-9" width="16" height="16" className={styles.coverLines} />
+    <path className={styles.coverLines} d="M9-8h8M9-3h8M9 2h8M-30 21h60" />
   </g>;
 }
+
+const MESH_NODES: [number, number][] = [[95, 205], [225, 168], [375, 172], [130, 290], [285, 278], [440, 285]];
+const MESH_LINKS = [[0, 1], [1, 2], [2, 5], [5, 4], [4, 3], [3, 0], [1, 4], [2, 4], [0, 4], [1, 3]];
+const MESH_ROUTE = [0, 1, 4, 5];
 
 /** Explanatory sleeve diagrams, built from each project's supplied facts. */
 function Artwork({ slug }: { slug: string }) {
   if (slug === "everygpu") return <>
-    <GPU x={130} y={185} /><GPU x={430} y={185} />
-    <Label x={130} y={131}>GPU shard</Label><Label x={430} y={131}>GPU shard</Label>
-    <g stroke="var(--redline)"><path d="M183 185h43v89h16M377 185h-43v89h-16" /><circle cx="226" cy="228" r="3" fill="var(--redline)" /><circle cx="334" cy="228" r="3" fill="var(--redline)" /></g>
-    <rect x="242" y="248" width="76" height="51" fill="#000" /><path d="M234 308h92l-8-9h-76Z" />
-    <path className={styles.coverLines} d="M252 259h56v29h-56Z" />
-    <Label x={280} y={339}>Laptop server</Label><Label x={280} y={174} accent>activation vectors</Label><Label x={280} y={194} accent>over TCP</Label>
+    <path className={styles.coverLines} d={MESH_LINKS.map(([a, b]) => `M${MESH_NODES[a].join(" ")}L${MESH_NODES[b].join(" ")}`).join("")} />
+    <path stroke="var(--redline)" d={MESH_ROUTE.map((n, i) => `${i ? "L" : "M"}${MESH_NODES[n].join(" ")}`).join("")} />
+    {MESH_NODES.map(([x, y]) => <Machine key={`${x}-${y}`} x={x} y={y} />)}
+    <Label x={170} y={338}>spare machines</Label><Label x={420} y={338} accent>one model</Label>
   </>;
   if (slug === "dictate") return <>
     <g className={styles.coverLines}><rect x="83" y="140" width="84" height="104" /><path d="M100 162h49m-49 16h49m-49 16h34m-34 16h49m-49 16h22" /><path d="M177 192h30m-7-5 7 5-7 5" /></g>

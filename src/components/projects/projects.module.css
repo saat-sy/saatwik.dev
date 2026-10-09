@@ -71,7 +71,7 @@
 
 .back { display: inline-flex; align-items: center; gap: 12px; color: var(--ink-faint); padding-block: 10px; }
 .back:hover { color: var(--redline); }
-.caseHeader { margin-top: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--rule); }
+.caseHeader { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 32px 40px; align-items: center; margin-top: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--rule); }
 .caseTitle { font-size: clamp(1.5rem, 3vw, 2rem); overflow-wrap: anywhere; }
 .caseKind { color: var(--ink-faint); margin-top: 12px; font-size: 0.9rem; }
 .caseSummary { max-width: 65ch; margin-top: 12px; color: var(--ink-soft); font-size: 1.05rem; line-height: 1.75; }
@@ -91,17 +91,11 @@
 .caseSection { margin-bottom: 48px; scroll-margin-top: 104px; }
 .caseSection h2 { font-family: var(--font-martian), monospace; font-size: 1.1rem; font-weight: 400; letter-spacing: -0.03em; margin-bottom: 18px; }
 .caseSection > p, .pointList { font-size: 1.05rem; color: var(--ink-soft); max-width: 75ch; line-height: 1.8; }
-.caseDiagram { max-width: 440px; margin: 0 auto 28px; }
-.caseDiagram .coverTitle { font-size: 1rem; }
-.caseDiagram .coverStack { font-size: 0.8rem; }
+.caseCover .coverTitle { font-size: 1rem; }
+.caseCover .coverStack { font-size: 0.8rem; }
 .pointList { display: grid; gap: 20px; }
 .pointList li { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 16px; }
 .pointList li::before { content: "+"; color: var(--redline); font-family: var(--font-martian), monospace; }
-.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 28px; }
-.metrics > div { border-top: 1px solid var(--rule); padding-top: 20px; }
-.metrics dt { color: var(--ink-soft); font-size: 0.9rem; max-width: 28ch; }
-.metrics dd { font-family: var(--font-martian), monospace; color: var(--redline); font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.04em; margin-top: 12px; }
-.metrics small { display: block; color: var(--ink-faint); font-family: var(--font-barlow), sans-serif; font-size: 0.85rem; margin-top: 10px; }
 .pipeline { display: grid; gap: 0; }
 .pipeline li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 20px; padding-bottom: 24px; }
 .pipelineMark { position: relative; }
@@ -135,7 +129,8 @@
   .sleeveGroup { margin-bottom: 48px; }
   .coverTitle { top: 20px; left: 20px; right: 20px; }
   .coverStack { bottom: 12px; left: 20px; right: 20px; font-size: 0.8rem; }
-  .caseHeader { margin-top: 24px; padding-bottom: 24px; }
+  .caseHeader { grid-template-columns: minmax(0, 1fr); margin-top: 24px; padding-bottom: 24px; }
+  .caseCover { order: -1; }
   .caseSummary { font-size: 1rem; }
   .specs { grid-template-columns: 1fr 1fr; gap: 24px; }
   .specs > div:last-child { grid-column: 1 / -1; }

@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRight, DownloadSimple } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import { person } from "@/content/site";
 import styles from "./contact.module.css";
@@ -20,6 +20,9 @@ export default function ContactPage() {
         <a href={`mailto:${person.email}`} className={styles.email}>{person.email}</a>
 
         <ul className={styles.links}>
+          <li>
+            <a href={person.links.resume} rel="noopener noreferrer">Download resume <DownloadSimple size={16} aria-hidden /></a>
+          </li>
           <li>
             <a href={person.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn <ArrowUpRight size={16} aria-hidden /></a>
           </li>

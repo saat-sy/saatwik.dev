@@ -10,6 +10,7 @@ export const person = {
   links: {
     linkedin: "https://www.linkedin.com/in/saatwik-yajaman",
     github: "https://github.com/saat-sy",
+    resume: "https://drive.google.com/uc?export=download&id=1PWmdA_XqjkRfSPmyyNsOD1K2QK7dY5aG",
   },
 } as const;
 

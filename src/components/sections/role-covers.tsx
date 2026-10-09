@@ -9,7 +9,7 @@ import styles from "./work.module.css";
 
 const concepts: Record<string, { outcome: string; input: string; output: string }> = {
   cyborg: { outcome: "An isolated challenge box for every competitor.", input: "Weekly CTF", output: "20+ isolated containers" },
-  meta: { outcome: "Drain test planning, from a day to two hours.", input: "Drain tests + risk telemetry", output: "Plan + 7-day forecast" },
+  meta: { outcome: "Which outages drain tests can predict.", input: "15+ tests + SEVs", output: "Drain test ROI" },
   crio: { outcome: "Four microservices, deployed end to end on AWS.", input: "Starter stubs", output: "50+ learners deploying" },
   anb: { outcome: "Product photos in. Catalog metadata out.", input: "Item images", output: "Validated tags, half the effort" },
   gsoc: { outcome: "Precise drawing under your fingertip.", input: "Canvas touch", output: "Magnified, for 1M+ users" },
@@ -37,16 +37,29 @@ function Artwork({ slug }: { slug: string }) {
     </>;
   }
   if (slug === "meta") {
-    const blocks = [0, 2, 3, 5];
+    const past = [146, 180, 214, 248, 282];
+    const predicted = [146, 170, 194];
+    const gaps = [262, 286];
+    const ticks = [54, 40, 62, 34, 48];
     return <>
-      <rect x="220" y="140" width="120" height="50" fill="#000" stroke="var(--redline)" />
-      <Label x={280} y={170} accent>LLM agent</Label>
-      <Label x={110} y={150}>drain tests</Label><Label x={450} y={150}>risk telemetry</Label>
-      <path className={covers.coverLines} d="M110 160v5h103m-7-5 7 5-7 5M450 160v5H347m7-5-7 5 7 5" />
-      <path className={covers.coverLines} d={`M70 300h420${Array.from({ length: 7 }, (_, i) => `M${70 + i * 70} 295v10`).join("")}`} />
-      {blocks.map((i) => <rect key={i} x={78 + i * 70} y="256" width="54" height="36" fill={i === 3 ? "var(--redline)" : "#000"} className={i === 3 ? undefined : covers.coverLines} stroke={i === 3 ? "none" : undefined} />)}
-      <g stroke="var(--redline)">{blocks.map((i) => <Draw key={i} d={`M280 190L${105 + i * 70} 256`} />)}</g>
-      <Label x={315} y={326} accent>at risk</Label><Label x={140} y={326}>six-week schedule</Label>
+      <Label x={120} y={130}>historical SEVs</Label>
+      {past.map((y, i) => <g key={y}>
+        <rect x="70" y={y} width="100" height="16" fill="#000" className={covers.coverLines} />
+        <path className={covers.coverLines} d={`M80 ${y + 8}h${ticks[i]}M170 ${y + 8}h30`} />
+      </g>)}
+      <path className={covers.coverLines} d="M200 154v136M200 222h30m-7-5 7 5-7 5" />
+      <rect x="230" y="192" width="100" height="60" fill="#000" stroke="var(--redline)" />
+      <Label x={280} y={218} accent>eval</Label><Label x={280} y={236} accent>framework</Label>
+      <path className={covers.coverLines} d="M280 306V256m-5 7 5-7 5 7" />
+      <Label x={280} y={326}>risk telemetry</Label>
+      <Label x={450} y={130}>predictable</Label>
+      {predicted.map((y, i) => <g key={y}>
+        <rect x="400" y={y} width="100" height="16" fill="#000" className={covers.coverLines} />
+        <path className={covers.coverLines} d={`M410 ${y + 8}h${[48, 62, 36][i]}`} />
+      </g>)}
+      <Label x={450} y={252} accent>needs onboarding</Label>
+      {gaps.map((y) => <rect key={y} x="400" y={y} width="100" height="16" fill="var(--redline)" stroke="none" />)}
+      <g stroke="var(--redline)"><Draw d="M330 222h30M360 178v104M360 178h32m-7-5 7 5-7 5M360 282h32m-7-5 7 5-7 5" /></g>
     </>;
   }
   if (slug === "crio") {

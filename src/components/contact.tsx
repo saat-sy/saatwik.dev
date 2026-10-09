@@ -9,6 +9,11 @@ function Links() {
   return (
     <ul className="flex flex-wrap gap-3">
       <li>
+        <a href={person.links.resume} rel="noopener" className={outlined}>
+          Download resume <span aria-hidden>↓</span>
+        </a>
+      </li>
+      <li>
         <a href={person.links.linkedin} rel="noopener" className={outlined}>
           LinkedIn <span aria-hidden>↗</span>
         </a>

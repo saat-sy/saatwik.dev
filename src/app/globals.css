@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+/*
+ * Drafted line work on terminal black. Two inks: off-white line and its
+ * dimmer tints. Redline is reserved for what changed (metrics).
+ */
+:root {
+  color-scheme: dark;
+
+  --sheet: #0a0c0b;
+  --sheet-deep: #070908;
+  --ink: #e8ede9;
+  --ink-soft: #a3ada6;
+  --ink-faint: #7d877f;
+  --rule: rgb(163 173 166 / 0.26);
+  --redline: #ff8a52;
+
+  /* Contact band and footer: a flat near-black band with off-white type. */
+  --band: #1a1a1a;
+  --band-ink: #fafaf8;
+  --band-muted: #b5b5b0;
+
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --sheet-max: 1400px;
+
+  /* Layers, lowest to highest. */
+  --z-content: 1;
+  --z-nav: 20;
+  --z-skip: 40;
+}
+
+@theme inline {
+  --color-sheet: var(--sheet);
+  --color-sheet-deep: var(--sheet-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-redline: var(--redline);
+  --color-band: var(--band);
+  --color-band-ink: var(--band-ink);
+  --color-band-muted: var(--band-muted);
+
+  --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-barlow-condensed), var(--font-barlow), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-martian), ui-monospace, monospace;
+  --font-plex: var(--font-ibm-plex), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    background: var(--sheet);
+    scrollbar-color: var(--ink-faint) var(--sheet-deep);
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--redline);
+    color: var(--sheet-deep);
+  }
+
+  :focus-visible {
+    outline: 2px dashed var(--redline);
+    outline-offset: 4px;
+  }
+
+  a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap-style: balance;
+  }
+
+  p {
+    text-wrap-style: pretty;
+  }
+}
+
+@layer components {
+  /* Technical lettering: annotations, dimensions, labels. */
+  .lettering {
+    font-family: var(--font-mono);
+    font-variation-settings: "wdth" 87.5;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Unbuilt content: drawn as construction lines until real copy lands. */
+  .construction {
+    color: var(--ink-faint);
+    border: 1px dashed var(--ink-faint);
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

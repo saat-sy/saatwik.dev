@@ -1,0 +1,266 @@
+// Facts on this site come from Saatwik's resume. Narrative copy that does not
+// exist yet is marked `placeholder: true` so pages can render it as unbuilt.
+
+export const person = {
+  name: "Saatwik S Yajaman",
+  shortName: "Saatwik",
+  tagline: "I build the systems that stay up, and the apps that run on them.",
+  availability: "Open to full-time roles",
+  location: "Los Angeles, CA",
+  email: "saatwik.sy@gmail.com",
+  links: {
+    linkedin: "https://www.linkedin.com/in/saatwik-yajaman",
+    github: "https://github.com/saat-sy",
+  },
+} as const;
+
+export type Metric = {
+  /** What was measured, in plain words. */
+  label: string;
+  before?: { value: number; unit: string; display: string };
+  after: { value: number; unit: string; display: string };
+};
+
+export type Role = {
+  slug: string;
+  org: string;
+  title: string;
+  place: string;
+  start: string;
+  end: string;
+  points: string[];
+  metrics: Metric[];
+  stack: string[];
+};
+
+export const experience: Role[] = [
+  {
+    slug: "meta",
+    org: "Meta",
+    title: "Production Engineer Intern",
+    place: "Bellevue, WA",
+    start: "2026-05",
+    end: "2026-08",
+    points: [
+      "Streamlined six-week drain test scheduling across Meta's products and services, cutting planning time from 1 day to 2 hours, by deploying a Python LLM agent adopted by the Disaster Recovery (DR) team.",
+      "Preempted service failures during drain tests by publishing daily forecasts of at-risk services and failure modes, giving service owners a 7-day advance notification window.",
+      "Quantified drain test ROI across 15+ historical tests for the DR team by designing an evaluation framework that correlated SEV root causes with risk telemetry to isolate novel failure modes.",
+    ],
+    metrics: [
+      {
+        label: "Drain test planning time",
+        before: { value: 24, unit: "h", display: "1 day" },
+        after: { value: 2, unit: "h", display: "2 hours" },
+      },
+      {
+        label: "Advance warning for service owners",
+        after: { value: 7, unit: "d", display: "7 days" },
+      },
+      {
+        label: "Historical drain tests evaluated",
+        after: { value: 15, unit: "+", display: "15+" },
+      },
+    ],
+    stack: ["Python", "LLM agents", "Risk telemetry"],
+  },
+  {
+    slug: "crio",
+    org: "Crio.Do",
+    title: "Product Engineer Intern",
+    place: "Bengaluru, India",
+    start: "2025-01",
+    end: "2025-07",
+    points: [
+      "Delivered an end-to-end AWS deployment curriculum for 50+ learners by building starter stubs, reference solutions and Docker Compose setups across EC2 and Lambda for a four-microservice app.",
+    ],
+    metrics: [
+      { label: "Learners taught to deploy on AWS", after: { value: 50, unit: "+", display: "50+" } },
+      { label: "Microservices in the reference app", after: { value: 4, unit: "", display: "4" } },
+    ],
+    stack: ["AWS EC2", "AWS Lambda", "Docker Compose"],
+  },
+  {
+    slug: "anb",
+    org: "ANB Solutions",
+    title: "Software Engineering Intern",
+    place: "Remote",
+    start: "2024-08",
+    end: "2024-12",
+    points: [
+      "Automated e-commerce product cataloging, reducing manual tagging effort by 50%, by deploying a multimodal pipeline using a Llama 3 vision model to extract and validate structured metadata from item images.",
+    ],
+    metrics: [
+      {
+        label: "Manual tagging effort",
+        before: { value: 100, unit: "%", display: "100%" },
+        after: { value: 50, unit: "%", display: "50%" },
+      },
+    ],
+    stack: ["Llama 3 Vision", "Python", "Multimodal pipelines"],
+  },
+  {
+    slug: "gsoc",
+    org: "Google Summer of Code",
+    title: "Software Contributor @ Catrobat",
+    place: "Remote",
+    start: "2022-06",
+    end: "2022-10",
+    points: [
+      "Enhanced drawing precision across 13 canvas tools, shipped to production for 1M+ users, by implementing an interactive canvas magnifier with dynamic coordinate mapping and viewport positioning.",
+      "Prevented UI regressions across an Android app with 1M+ downloads by building reusable UI test helpers and 4 Espresso E2E tests validating visibility and placement.",
+    ],
+    metrics: [
+      { label: "Users reached in production", after: { value: 1_000_000, unit: "+", display: "1M+" } },
+      { label: "Canvas tools made more precise", after: { value: 13, unit: "", display: "13" } },
+      { label: "Espresso E2E tests added", after: { value: 4, unit: "", display: "4" } },
+    ],
+    stack: ["Kotlin", "Android", "Espresso"],
+  },
+];
+
+export const leadership: Role[] = [
+  {
+    slug: "cyborg",
+    org: "CybOrg at USC",
+    title: "Infrastructure Tech Lead, TACTICS",
+    place: "Los Angeles, CA",
+    start: "2026-09",
+    end: "present",
+    points: [
+      "Executed a platform migration across GCP environments to sustain weekly CTF events, managing Kubernetes infrastructure and Traefik ingress routing to dynamically spin up isolated challenge containers for 20+ competitors.",
+    ],
+    metrics: [
+      { label: "Competitors per weekly CTF", after: { value: 20, unit: "+", display: "20+" } },
+    ],
+    stack: ["GCP", "Kubernetes", "Traefik"],
+  },
+];
+
+export type ProjectStatus = "building" | "shipped" | "archived";
+
+/** A project with a full case-study page. */
+export type Project = {
+  slug: string;
+  name: string;
+  status: ProjectStatus;
+  /** Shown on the home page. */
+  featured: boolean;
+  kind: string;
+  start: string;
+  end: string;
+  summary: string;
+  points: string[];
+  metrics: Metric[];
+  stack: string[];
+};
+
+export const projects: Project[] = [
+  {
+    slug: "everygpu",
+    name: "EveryGPU",
+    status: "building",
+    featured: true,
+    kind: "Distributed LLM inference engine",
+    start: "2026-09",
+    end: "present",
+    summary: "Pipeline-parallel OLMoE inference split across remote GPUs, with a profiler that shows where the time goes.",
+    points: [
+      "Developed a distributed inference engine partitioning OLMoE across 2 remote GPUs to execute pipeline-parallel model evaluation across discrete nodes.",
+      "Instrumented an OpenTelemetry-based profiler measuring stage compute vs. transport overhead, identifying full-sequence transfers as up to 55.6% of end-to-end latency.",
+    ],
+    metrics: [
+      { label: "End-to-end latency spent on full-sequence transfers", after: { value: 55.6, unit: "%", display: "55.6%" } },
+      { label: "Remote GPUs in the pipeline", after: { value: 2, unit: "", display: "2" } },
+    ],
+    stack: ["Python", "CUDA", "OpenTelemetry", "OLMoE"],
+  },
+  {
+    slug: "dictate",
+    name: "Dictate",
+    status: "shipped",
+    featured: true,
+    kind: "Text-to-speech Android app",
+    start: "2020-05",
+    end: "present",
+    summary: "A native Android app I founded and have run in production for over five years.",
+    points: [
+      "Founded and scaled a native Android app to 90K+ installs and 5K+ MAU over 5+ years, owning production maintenance, live debugging and iteration on user feedback.",
+      "Engineered long-running TTS playback with background execution and multi-source text ingestion through Google Vision OCR and local SQLite backed storage.",
+    ],
+    metrics: [
+      { label: "Installs", after: { value: 90_000, unit: "+", display: "90K+" } },
+      { label: "Monthly active users", after: { value: 5_000, unit: "+", display: "5K+" } },
+      { label: "Years in production", after: { value: 5, unit: "+", display: "5+" } },
+    ],
+    stack: ["Kotlin", "Android", "Google Vision OCR", "SQLite"],
+  },
+  {
+    slug: "timbre",
+    name: "Timbre",
+    status: "shipped",
+    featured: true,
+    kind: "AI video soundtracking platform",
+    start: "2025-09",
+    end: "2025-10",
+    summary: "Streams generated music that follows a video in real time.",
+    points: [
+      "Built a real-time video-to-music streaming backend with FastAPI and WebSockets and a React and Next.js frontend, maintaining sub-two-second end-to-end latency across concurrent sessions.",
+    ],
+    metrics: [
+      { label: "End-to-end latency", after: { value: 2, unit: "s", display: "< 2 s" } },
+    ],
+    stack: ["FastAPI", "WebSockets", "React", "Next.js"],
+  },
+];
+
+/** Smaller work listed on the projects page without a case study. */
+export type ProjectNote = {
+  name: string;
+  status: Exclude<ProjectStatus, "shipped">;
+  period: string;
+  summary: string;
+  stack: string[];
+  href?: string;
+  /** Not real yet: rendered as construction lines until Saatwik fills it in. */
+  placeholder?: boolean;
+};
+
+export const projectNotes: ProjectNote[] = [
+  { name: "Next project", status: "building", period: "2026", summary: "Something currently on the bench.", stack: ["TBD"], placeholder: true },
+  { name: "Archived project", status: "archived", period: "2024", summary: "An earlier project worth keeping on record.", stack: ["TBD"], placeholder: true },
+  { name: "Archived project", status: "archived", period: "2023", summary: "An earlier project worth keeping on record.", stack: ["TBD"], placeholder: true },
+  { name: "Archived project", status: "archived", period: "2021", summary: "An earlier project worth keeping on record.", stack: ["TBD"], placeholder: true },
+];
+
+export const education = [
+  {
+    school: "University of Southern California",
+    degree: "Master of Science in Computer Science",
+    note: "Grader, CSCI 585: Database Systems",
+    place: "Los Angeles, CA",
+    start: "2025-08",
+    end: "2027-05",
+  },
+  {
+    school: "M S Ramaiah University of Applied Sciences",
+    degree: "Bachelor of Technology in Computer Science",
+    place: "Bengaluru, India",
+    start: "2021-12",
+    end: "2025-06",
+  },
+];
+
+export const placeholderParagraph =
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function formatMonth(ym: string) {
+  if (ym === "present") return "Present";
+  const [y, m] = ym.split("-").map(Number);
+  return `${monthNames[m - 1]} ${y}`;
+}
+
+export function formatRange(start: string, end: string) {
+  return `${formatMonth(start)} - ${formatMonth(end)}`;
+}

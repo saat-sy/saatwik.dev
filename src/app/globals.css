@@ -29,6 +29,32 @@
   --z-skip: 40;
 }
 
+/*
+ * Black sheet: pure black with a green redline, for pages that carry the
+ * `black-sheet` class. Cached route trees do not carry their theme into the
+ * visible page, so the theme follows whichever sheet is on screen.
+ */
+html:has(.black-sheet:not([hidden] *, [style*="display: none"] *)) {
+  --sheet: #000;
+  --sheet-deep: #000;
+  --ink: #eceeec;
+  --ink-soft: #a0a5a1;
+  --ink-faint: #7e857f;
+  --rule: #252925;
+  --redline: #a5e88a;
+  --band: #000;
+  --band-ink: #eceeec;
+  --band-muted: #a0a5a1;
+  background: #000;
+}
+
+body:has(.black-sheet:not([hidden] *, [style*="display: none"] *)) > header nav > a {
+  font-family: var(--font-martian), monospace;
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: -0.04em;
+}
+
 @theme inline {
   --color-sheet: var(--sheet);
   --color-sheet-deep: var(--sheet-deep);

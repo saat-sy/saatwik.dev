@@ -1,7 +1,7 @@
 // Facts on this site come from Saatwik's resume and project interviews.
 
 export const person = {
-  name: "Saatwik S Yajaman",
+  name: "Saatwik Yajaman",
   shortName: "Saatwik",
   tagline: "I build the systems that stay up, and the apps that run on them.",
   availability: "Open to full-time roles",
@@ -289,6 +289,8 @@ export const projects: Project[] = [
     status: "shipped",
     featured: true,
     kind: "1v1 strategy game",
+    start: "2022-03",
+    end: "2022-04",
     summary: "A 1v1 strategy game that combines chess-like movement with 2048-style merging.",
     points: [
       "Built Gobble before college, learning Flutter and the BLoC pattern from scratch.",
@@ -390,7 +392,7 @@ export const projects: Project[] = [
     featured: false,
     kind: "Screenshot-to-Flutter-code experiment",
     start: "2021-11",
-    end: "2021-11",
+    end: "2021-12",
     summary: "An early experiment in generating Flutter UI code from screenshots.",
     points: [
       "Built an end-to-end screenshot-to-code experiment after seeing neural networks learn visual tasks in GTA V.",

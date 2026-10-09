@@ -124,8 +124,9 @@ export function TerminalHero() {
               <span data-typed>whoami</span>
             </Prompt>
             <div data-out className="mt-3">
-              <h1 className="font-display text-[clamp(3.25rem,10vw,9rem)] font-semibold uppercase leading-[0.9] tracking-[0.005em]">
-                {person.name}
+              <h1 className="font-mono text-[clamp(2.4rem,7vw,6rem)] font-medium leading-[1.1] tracking-[-0.04em]">
+                {person.name.toLowerCase()}
+                <span className="text-redline" aria-hidden>_</span>
               </h1>
               <p className="mt-4 max-w-[46ch] font-sans text-lg text-ink-soft sm:text-2xl">{person.tagline}</p>
             </div>

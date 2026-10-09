@@ -3,13 +3,15 @@
 import { useRef, useState } from "react";
 import { ContactShort } from "@/components/contact";
 import { MetricDrawing } from "@/components/drafting/dimension";
-import { RoleStage } from "@/components/work-scene/role-stage";
 import { experience, formatRange, leadership } from "@/content/site";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import home from "./home.module.css";
+import { RoleCovers } from "./role-covers";
+import styles from "./work.module.css";
 
 // Survey alignment: one line surveyed through time, a station per role with
 // its chainage (the start date). The line is plotted by scroll, and the pinned
-// stage beside it swaps to each role's 3D model as its station arrives.
+// figure beside it slides to each role's drafted sleeve as its station arrives.
 
 const roles = [...leadership, ...experience];
 
@@ -23,10 +25,11 @@ export function ExperienceLine() {
       gsap.utils.toArray<HTMLElement>("[data-station]").forEach((el) => {
         ScrollTrigger.create({
           trigger: el,
-          start: "top 55%",
-          end: "bottom 55%",
-          onToggle: (self) => {
-            if (self.isActive) setActive(el.dataset.station!);
+          start: "top 60%",
+          onEnter: () => setActive(el.dataset.station!),
+          onLeaveBack: () => {
+            const index = roles.findIndex((role) => role.slug === el.dataset.station);
+            setActive(roles[Math.max(0, index - 1)].slug);
           },
         });
       });
@@ -55,13 +58,30 @@ export function ExperienceLine() {
   );
 
   return (
-    <section ref={ref} id="work" aria-labelledby="work-title" className="mx-auto max-w-(--sheet-max) px-(--gutter) py-24">
-      <h2 id="work-title" className="mb-10 font-display text-5xl font-semibold uppercase sm:text-6xl">
-        Work
-      </h2>
-      <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:gap-14">
-        <div className="sticky top-16 z-(--z-content) -mx-(--gutter) h-[36dvh] self-start bg-sheet px-(--gutter) pb-3 md:top-24 md:mx-0 md:h-[min(34rem,calc(100dvh-8rem))] md:px-0 md:pb-0">
-          <RoleStage roles={roles} active={active} />
+    <section ref={ref} id="work" aria-labelledby="work-title" className={`mx-auto max-w-(--sheet-max) px-(--gutter) py-24 ${styles.work}`}>
+      <div className={home.head}>
+        <h2 id="work-title">work<span aria-hidden>_</span></h2>
+      </div>
+      <div className={styles.layout}>
+        <div className={styles.stagePanel}>
+          <RoleCovers roles={roles} active={active} />
+          <nav className={styles.map} aria-label="Work map">
+            <ol>{roles.map((role) => <li key={role.slug}>
+              <a href={`#station-${role.slug}`} aria-current={role.slug === active ? "step" : undefined}
+                onClick={(event) => {
+                  event.preventDefault();
+                  setActive(role.slug);
+                  window.history.replaceState(null, "", `#station-${role.slug}`);
+                  const target = document.getElementById(`station-${role.slug}`);
+                  const offset = window.matchMedia("(max-width: 767px)").matches ? (ref.current?.querySelector<HTMLElement>(`.${styles.stagePanel}`)?.offsetHeight ?? 0) + 80 : 112;
+                  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                  if (target) gsap.to(window, { scrollTo: { y: target, offsetY: offset }, duration: reduce ? 0 : 0.65, ease: "expo.out", onComplete: () => setActive(role.slug) });
+                }}>
+                <span className={styles.mapStation} aria-hidden />
+                <span>{role.org}</span><time dateTime={role.start}>{role.start.slice(0, 4)}</time>
+              </a>
+            </li>)}</ol>
+          </nav>
         </div>
 
         <div data-track className="relative pl-10 sm:pl-14">
@@ -77,20 +97,20 @@ export function ExperienceLine() {
                   key={role.slug}
                   id={`station-${role.slug}`}
                   data-station={role.slug}
-                  className="relative flex min-h-[64dvh] flex-col justify-center gap-4 py-12 md:min-h-[78dvh]"
+                  className={`relative flex flex-col justify-center gap-5 ${styles.station}`}
                 >
                   <span
                     className={`absolute -left-10 top-1/2 size-3 -translate-x-[calc(50%-0.75rem-0.5px)] -translate-y-1/2 rotate-45 border-2 transition-colors duration-300 sm:-left-14 sm:-translate-x-[calc(50%-1.25rem-0.5px)] ${on ? "border-redline bg-redline" : "border-ink-faint bg-sheet"}`}
                     aria-hidden
                   />
                   <div data-reveal>
-                    <h3 className="font-display text-4xl font-semibold uppercase leading-none sm:text-5xl">{role.org}</h3>
+                    <h3>{role.org}</h3>
                     <p className="mt-1 text-ink">{role.title}</p>
                     <p className="lettering mt-1 text-ink-faint">
                       {formatRange(role.start, role.end)}, {role.place}
                     </p>
                   </div>
-                  <ul data-reveal className="max-w-[60ch] list-[square] space-y-2 pl-5 text-[0.9375rem] text-ink-soft marker:text-ink-faint">
+                  <ul data-reveal className="max-w-[65ch] list-[square] space-y-3 pl-5 text-base text-ink-soft marker:text-ink-faint">
                     {role.points.map((p) => (
                       <li key={p}>{p}</li>
                     ))}
@@ -100,6 +120,7 @@ export function ExperienceLine() {
                       <MetricDrawing key={m.label} metric={m} />
                     ))}
                   </div>
+                  <ul className={styles.stack} aria-label="Technologies used">{role.stack.map((tool) => <li key={tool}>{tool}</li>)}</ul>
                 </li>
               );
             })}

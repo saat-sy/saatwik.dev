@@ -69,7 +69,7 @@ export function SiteNav() {
       const link = active ? links.current.get(active) : undefined;
       if (!m || !ul) return;
       if (!link || link.offsetParent === null) {
-        gsap.to(m, { autoAlpha: 0, duration: animate ? 0.2 : 0 });
+        gsap.to(m, { autoAlpha: 0, duration: animate ? 0.2 : 0, overwrite: true });
         return;
       }
       const box = link.getBoundingClientRect();
@@ -80,6 +80,7 @@ export function SiteNav() {
         autoAlpha: 1,
         duration: animate && !reduced() ? 0.5 : 0,
         ease: "expo.out",
+        overwrite: true,
       });
     },
     [active],

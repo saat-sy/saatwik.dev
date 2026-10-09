@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps<"/projects/[slug]">
 }
 
 const statusLabel = { building: "In progress", shipped: "Shipped", archived: "Archived" } as const;
-const caseStudySections = ["Why I built it", "The hard part", "Decisions", "What I learned"];
+const caseStudyPlaceholderSections = ["Why I built it", "The hard part", "Decisions", "What I learned"];
 
 function Spec({ term, children }: { term: string; children: React.ReactNode }) {
   return (
@@ -39,6 +39,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
   const project = projects[index];
   const next = projects[(index + 1) % projects.length];
   const diagram = diagrams[project.slug];
+  const caseStudy = project.caseStudy ?? caseStudyPlaceholderSections.map((heading) => ({ heading, body: "" }));
 
   return (
     <article className="mx-auto max-w-(--sheet-max) px-(--gutter) pb-24 pt-10">
@@ -96,11 +97,11 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
             <li key={point}>{point}</li>
           ))}
         </ul>
-        {caseStudySections.map((heading) => (
-          <section key={heading} className="contents">
-            <h2 className="font-display text-3xl font-semibold uppercase">{heading}</h2>
+        {caseStudy.map((section) => (
+          <section key={section.heading} className="contents">
+            <h2 className="font-display text-3xl font-semibold uppercase">{section.heading}</h2>
             <div className="max-w-[68ch]">
-              <Construction note="case study copy" lines={2} />
+              {section.body ? <p className="text-lg text-ink-soft">{section.body}</p> : <Construction note="case study copy" lines={2} />}
             </div>
           </section>
         ))}

@@ -1,5 +1,6 @@
-// Facts on this site come from Saatwik's resume. Narrative copy that does not
-// exist yet is marked `placeholder: true` so pages can render it as unbuilt.
+// Facts on this site come from Saatwik's resume and project interviews.
+// Narrative copy that does not exist yet is marked `placeholder: true` so
+// pages can render it as unbuilt.
 
 export const person = {
   name: "Saatwik S Yajaman",
@@ -138,6 +139,11 @@ export const leadership: Role[] = [
 
 export type ProjectStatus = "building" | "shipped" | "archived";
 
+export type CaseStudySection = {
+  heading: string;
+  body: string;
+};
+
 /** A project with a full case-study page. */
 export type Project = {
   slug: string;
@@ -152,6 +158,8 @@ export type Project = {
   points: string[];
   metrics: Metric[];
   stack: string[];
+  /** Written when the project interview has supplied a real narrative. */
+  caseStudy?: CaseStudySection[];
 };
 
 export const projects: Project[] = [
@@ -163,16 +171,35 @@ export const projects: Project[] = [
     kind: "Distributed LLM inference engine",
     start: "2026-09",
     end: "present",
-    summary: "Pipeline-parallel OLMoE inference split across remote GPUs, with a profiler that shows where the time goes.",
+    summary: "An experiment in joining spare GPUs into an efficient inference pipeline, with instrumentation that shows where every request waits.",
     points: [
-      "Developed a distributed inference engine partitioning OLMoE across 2 remote GPUs to execute pipeline-parallel model evaluation across discrete nodes.",
-      "Instrumented an OpenTelemetry-based profiler measuring stage compute vs. transport overhead, identifying full-sequence transfers as up to 55.6% of end-to-end latency.",
+      "Built a distributed inference prototype that passes activation vectors over TCP from one GPU, through a laptop-hosted server, to the next GPU shard.",
+      "Built an evaluation platform that breaks every request into end-to-end latency, per-shard prefill and decode time, vector transport overhead, and server-queue wait time.",
+      "Now optimizing a small model toward 15-20 tokens per second before testing a larger model across more distributed GPU networks.",
     ],
     metrics: [
-      { label: "End-to-end latency spent on full-sequence transfers", after: { value: 55.6, unit: "%", display: "55.6%" } },
-      { label: "Remote GPUs in the pipeline", after: { value: 2, unit: "", display: "2" } },
+      { label: "Tokens per second targeted for the first small model", after: { value: 20, unit: "tok/s", display: "15-20" } },
+      { label: "Latency signals the evaluator records per request", after: { value: 4, unit: "", display: "4" } },
     ],
-    stack: ["Python", "CUDA", "OpenTelemetry", "OLMoE"],
+    stack: ["Python", "CUDA", "TCP", "OpenTelemetry"],
+    caseStudy: [
+      {
+        heading: "Why I built it",
+        body: "EveryGPU began with a simple question: if a laptop, Colab, and Kaggle can each offer usable GPU capacity, why can’t they work together to run a model that none could serve alone? I started by exploring how scattered, otherwise-idle GPUs could act as one inference system.",
+      },
+      {
+        heading: "The hard part",
+        body: "The first prototype made clear that adding GPUs is not enough. Each request must be split, scheduled, and carried between machines without letting queueing or network transfer erase the gains from extra compute. Right now, activation vectors travel over TCP through a laptop-hosted server between GPU shards.",
+      },
+      {
+        heading: "What I learned",
+        body: "Distributed inference needs measurement before optimization. The evaluation platform separates queue wait, per-shard prefill and decode, and transport overhead, so I can see where a request actually spends time.",
+      },
+      {
+        heading: "Where it goes next",
+        body: "The immediate target is an efficient small-model system at roughly 15-20 tokens per second. From there, I want to test direct peer-to-peer transport, potentially with QUIC, and scale to larger models and more remote GPUs. The longer-term work is routing requests well across n GPUs and m shards, sustaining useful concurrent throughput, recovering from unreliable nodes, and building a desktop app that gives a participant’s GPU back when they need it.",
+      },
+    ],
   },
   {
     slug: "dictate",

@@ -1,6 +1,4 @@
 // Facts on this site come from Saatwik's resume and project interviews.
-// Narrative copy that does not exist yet is marked `placeholder: true` so
-// pages can render it as unbuilt.
 
 export const person = {
   name: "Saatwik S Yajaman",
@@ -157,12 +155,14 @@ export type Project = {
   end?: string;
   summary: string;
   points: string[];
+  /** Only real, measured numbers; empty when the project has none. */
   metrics: Metric[];
   stack: string[];
   /** A published app or demo, when the project has one. */
   liveUrl?: string;
-  /** Written when the project interview has supplied a real narrative. */
-  caseStudy?: CaseStudySection[];
+  /** The public source repository, when there is one. */
+  repoUrl?: string;
+  caseStudy: CaseStudySection[];
 };
 
 export const projects: Project[] = [
@@ -318,25 +318,109 @@ export const projects: Project[] = [
       },
     ],
   },
-];
-
-/** Smaller work listed on the projects page without a case study. */
-export type ProjectNote = {
-  name: string;
-  status: Exclude<ProjectStatus, "shipped">;
-  period: string;
-  summary: string;
-  stack: string[];
-  href?: string;
-  /** Not real yet: rendered as construction lines until Saatwik fills it in. */
-  placeholder?: boolean;
-};
-
-export const projectNotes: ProjectNote[] = [
-  { name: "Next project", status: "building", period: "2026", summary: "Something currently on the bench.", stack: ["TBD"], placeholder: true },
-  { name: "Archived project", status: "archived", period: "2024", summary: "An earlier project worth keeping on record.", stack: ["TBD"], placeholder: true },
-  { name: "Archived project", status: "archived", period: "2023", summary: "An earlier project worth keeping on record.", stack: ["TBD"], placeholder: true },
-  { name: "Archived project", status: "archived", period: "2021", summary: "An earlier project worth keeping on record.", stack: ["TBD"], placeholder: true },
+  {
+    slug: "mach",
+    name: "MACH",
+    status: "building",
+    featured: false,
+    kind: "Meta-harness for coding agents",
+    start: "2026-10",
+    end: "present",
+    summary: "A model-agnostic coding harness that chooses the right model and execution setup for a task automatically.",
+    points: [
+      "Conceived MACH after repeatedly having to decide whether a coding task belonged with Codex, Claude, or another model.",
+      "Designed it as a meta-harness that evaluates the task, repository context, model capabilities, cost, and speed.",
+      "Intends to route work to the most suitable model and harness automatically instead of requiring manual model selection.",
+      "Currently at the idea stage, with the core product question defined before implementation begins.",
+    ],
+    metrics: [],
+    stack: [],
+    caseStudy: [
+      {
+        heading: "Why it exists",
+        body: "Different coding models excel at different kinds of work, but deciding which one to use adds friction before the task even begins. MACH started from that daily decision problem.",
+      },
+      {
+        heading: "The idea",
+        body: "MACH is a meta-harness. It would evaluate the task, its repository context, the available models, cost, and speed, then choose the appropriate model and execution harness automatically.",
+      },
+      {
+        heading: "Current status",
+        body: "MACH is a new concept in active development. The routing problem is clear; the implementation is the next step.",
+      },
+    ],
+  },
+  {
+    slug: "hyprlander",
+    name: "Hyprlander",
+    status: "shipped",
+    featured: false,
+    kind: "Command-line tool for the Hyprland window manager",
+    start: "2025-09",
+    end: "2025-11",
+    summary: "Describe the change you want in plain language, and Hyprlander edits your Hyprland config for you.",
+    points: [
+      "Built a command-line tool that manages and customizes the Hyprland window manager from plain-language requests, such as “make my desktop more minimalist”.",
+      "Used a ReAct agent architecture: the agent reasons about the request and the current setup, acts on the config files, observes the result, and iterates until the task is done.",
+      "Integrated the Gemini API to interpret requests, with actions that read, back up, and modify Hyprland config files.",
+      "Wrote it in Go, inspired by tools like gemini-cli and claude-code.",
+    ],
+    metrics: [{ label: "Stages in the agent’s reason, act, observe, iterate loop", after: { value: 4, unit: "", display: "4" } }],
+    stack: ["Go", "Gemini API", "Hyprland"],
+    repoUrl: "https://github.com/saat-sy/hyprlander",
+    caseStudy: [
+      {
+        heading: "What it is",
+        body: "Hyprlander is a command-line tool that makes it easier to manage and customize the Hyprland window manager. Instead of digging through config files or memorizing syntax, you type what you want to change and it works out the edits.",
+      },
+      {
+        heading: "How it works",
+        body: "Hyprlander runs a ReAct loop. The agent reasons about your request and your current Hyprland configuration, acts by reading, backing up, and modifying config files, then observes the result and checks for conflicts. It keeps iterating until the task is complete, using the Gemini API to interpret what you ask for.",
+      },
+      {
+        heading: "Using it",
+        body: "Running hyprlander init stores your Gemini API key. After that, a request like hyprlander prompt “I’m having screen tearing issues” starts a conversation with your Hyprland setup.",
+      },
+    ],
+  },
+  {
+    slug: "fluttergenerator",
+    name: "FlutterGenerator",
+    status: "archived",
+    featured: false,
+    kind: "Screenshot-to-Flutter-code experiment",
+    start: "2021-11",
+    end: "2021-11",
+    summary: "An early experiment in generating Flutter UI code from screenshots.",
+    points: [
+      "Built an end-to-end screenshot-to-code experiment after seeing neural networks learn visual tasks in GTA V.",
+      "Created a training-data pipeline that collected Flutter projects, transformed widgets into runnable examples, rendered them in DartPad, and paired screenshots with Dart source code.",
+      "Trained an image-to-sequence model using an Inception V3 encoder and LSTM decoder to generate Flutter code token by token from a UI screenshot.",
+      "Built a Flask upload demo that ran inference and displayed the generated Dart output.",
+      "Learned that data collection was the real challenge, and that this kind of convolutional/recurrent model was not well suited to generating convincing UI code from screenshots.",
+    ],
+    metrics: [],
+    stack: ["Python", "PyTorch", "Inception V3", "LSTM", "Selenium", "DartPad", "Flask"],
+    repoUrl: "https://github.com/saat-sy/FlutterGenerator",
+    caseStudy: [
+      {
+        heading: "Why I built it",
+        body: "After watching Sentdex build neural networks that controlled GTA V from visual input, I wondered whether a model could learn to turn a UI screenshot into Flutter code.",
+      },
+      {
+        heading: "The hard part",
+        body: "The hard problem was not training the network. It was creating a dataset. I built a pipeline that found Flutter projects, prepared their widgets to run in isolation, rendered them in DartPad, and paired each image with its source code.",
+      },
+      {
+        heading: "How it worked",
+        body: "A pretrained image encoder processed the screenshot, while an LSTM decoder generated Dart tokens one at a time. A Flask site accepted an uploaded UI image and displayed the model’s predicted Flutter code.",
+      },
+      {
+        heading: "What I learned",
+        body: "The model produced very little that was convincing. That result was useful: the project taught me that the architecture and data representation matter as much as the idea, and that standard neural networks were not a good fit for this kind of code-generation task.",
+      },
+    ],
+  },
 ];
 
 export const education = [
@@ -369,7 +453,7 @@ function formatMonth(ym: string) {
 }
 
 export function formatRange(start: string, end: string) {
-  return `${formatMonth(start)} - ${formatMonth(end)}`;
+  return start === end ? formatMonth(start) : `${formatMonth(start)} - ${formatMonth(end)}`;
 }
 
 /** A project's period, or "Live" when only its published app is recorded. */

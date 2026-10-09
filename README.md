@@ -52,8 +52,7 @@ All facts live in a few typed files, so content changes rarely touch components.
 | --- | --- |
 | Name, tagline, availability, email, links | `src/content/site.ts` (`person`) |
 | Jobs and leadership roles, with metrics | `src/content/site.ts` (`experience`, `leadership`) |
-| Projects with case-study pages | `src/content/site.ts` (`projects`); set `status` and `featured` |
-| In-progress and archived projects (list only) | `src/content/site.ts` (`projectNotes`); remove `placeholder: true` once real |
+| Projects, each with a case-study page | `src/content/site.ts` (`projects`); set `status` (building, shipped, or archived), `featured` (home page), and `caseStudy` |
 | Education | `src/content/site.ts` (`education`) |
 | "How it works" diagram per project | `src/content/diagrams.ts` |
 | 3D model per role or project | `src/components/work-scene/models.tsx` (keyed by slug) |

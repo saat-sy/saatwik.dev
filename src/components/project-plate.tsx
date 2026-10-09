@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MetricDrawing } from "@/components/drafting/dimension";
 import { Plot } from "@/components/drafting/plot";
 import { projectPeriod, type Project } from "@/content/site";
+import { fitHeading } from "@/lib/fit-heading";
 
 /** A project as a drawing plate: name at display scale, numbers drawn to measure. */
 export function ProjectPlate({ project, headingLevel = 3 }: { project: Project; headingLevel?: 2 | 3 }) {
@@ -20,7 +21,12 @@ export function ProjectPlate({ project, headingLevel = 3 }: { project: Project; 
           ) : null}
           {projectPeriod(project)}
         </p>
-        <Heading className="mt-2 font-display text-6xl font-semibold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">{project.name}</Heading>
+        <Heading
+          style={fitHeading(project.name, 0.38)}
+          className="mt-2 font-display font-semibold uppercase leading-[0.9] [--h-base:3.75rem] sm:[--h-base:4.5rem] lg:[--h-base:6rem] text-[length:min(var(--h-base),var(--fit-narrow))] lg:text-[length:min(var(--h-base),var(--fit-wide))]"
+        >
+          {project.name}
+        </Heading>
         <p className="mt-3 text-lg text-ink">{project.kind}</p>
         <p className="mt-2 max-w-[48ch] text-ink-soft">{project.summary}</p>
       </div>

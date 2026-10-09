@@ -56,4 +56,36 @@ export const diagrams: Record<string, Diagram> = {
     links: [{}, {}, { label: "moves and turns sync live", hot: true }],
     footnote: "The goal is to eliminate the opponent’s color from the board.",
   },
+  mach: {
+    title: "One task, the right model and harness",
+    steps: [
+      { label: "Task", note: "a coding request in a repository" },
+      { label: "MACH", note: "weighs the task, repo context, models, cost, and speed" },
+      { label: "Model + harness", note: "chosen automatically, such as Codex or Claude" },
+    ],
+    links: [{}, { label: "routed automatically", hot: true }],
+    footnote: "Currently at the idea stage: the routing question is defined, and implementation is next.",
+  },
+  hyprlander: {
+    title: "Plain language to Hyprland config",
+    steps: [
+      { label: "Your request", note: "“make my desktop more minimalist”" },
+      { label: "Reason", note: "reads your request and current setup, with the Gemini API" },
+      { label: "Act", note: "reads, backs up, and edits config files" },
+      { label: "Observe", note: "validates changes and checks for conflicts" },
+    ],
+    links: [{}, {}, { label: "repeat until done", hot: true }],
+    footnote: "A ReAct agent loop, written in Go.",
+  },
+  fluttergenerator: {
+    title: "From a screenshot to Flutter code",
+    steps: [
+      { label: "Screenshot", note: "an uploaded image of a Flutter UI" },
+      { label: "Image encoder", note: "pretrained Inception V3" },
+      { label: "Code decoder", note: "an LSTM predicts Dart tokens" },
+      { label: "Flutter code", note: "shown on a Flask page" },
+    ],
+    links: [{}, {}, { label: "one token at a time", hot: true }],
+    footnote: "Training pairs came from open-source Flutter apps rendered in DartPad.",
+  },
 };

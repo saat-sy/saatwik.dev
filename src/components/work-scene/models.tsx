@@ -67,12 +67,12 @@ function Meta({ color }: { color: string }) {
 // to GPU, and packets (activation vectors) travel along it in redline.
 const POOL_RADIUS = 1.05;
 const POOL_NODES: { size: [number, number, number]; angle: number }[] = [
-  { size: [0.46, 0.28, 0.34], angle: 0.35 },
-  { size: [0.36, 0.2, 0.3], angle: 1.4 },
-  { size: [0.4, 0.34, 0.3], angle: 2.45 },
-  { size: [0.5, 0.22, 0.36], angle: 3.5 },
-  { size: [0.34, 0.3, 0.28], angle: 4.55 },
-  { size: [0.42, 0.24, 0.32], angle: 5.6 },
+  { size: [0.46, 0.42, 0.34], angle: 0.35 },
+  { size: [0.36, 0.3, 0.3], angle: 1.4 },
+  { size: [0.4, 0.5, 0.3], angle: 2.45 },
+  { size: [0.5, 0.34, 0.36], angle: 3.5 },
+  { size: [0.34, 0.46, 0.28], angle: 4.55 },
+  { size: [0.42, 0.36, 0.32], angle: 5.6 },
 ];
 const POOL_ROUTE = [0, 2, 4];
 const LINE_Y = 0.1;
@@ -120,7 +120,7 @@ function EveryGpu({ color }: { color: string }) {
   });
 
   return (
-    <group position={[0, 0.35, 0]} scale={0.62}>
+    <group position={[0, 0.4, 0]} scale={0.88}>
       <Lines points={boundary} color={SOFT} />
       <Lines points={spokes.idle} color={SOFT} />
       <Lines points={spokes.hot} color={RED} />
@@ -575,6 +575,336 @@ function Gobble({ color }: { color: string }) {
   );
 }
 
+// A monitor of tiled windows rearranges itself while a request types into the
+// prompt bar below: the agent acts (redline frame), then a new layout settles.
+const HYPR_LAYOUTS: [number, number, number, number][][] = [
+  // [centre x, centre y, width, height] per window; zero size hides it.
+  [[-0.4, 0, 0.76, 0.96], [0.4, 0.24, 0.76, 0.46], [0.4, -0.24, 0.76, 0.46], [0.4, -0.24, 0, 0]],
+  [[-0.4, 0.24, 0.76, 0.46], [0.4, 0.24, 0.76, 0.46], [-0.4, -0.24, 0.76, 0.46], [0.4, -0.24, 0.76, 0.46]],
+  [[0, 0, 1.32, 0.86], [0.4, 0.24, 0, 0], [0.4, -0.24, 0, 0], [0.4, -0.24, 0, 0]],
+];
+const HYPR_CYCLE_SECONDS = 4.4;
+const HYPR_TYPE_SECONDS = 1.8;
+const HYPR_ACT_START = 2.2;
+const HYPR_ACT_SECONDS = 0.9;
+const HYPR_GAP = 0.05;
+const HYPR_SCREEN_Y = 0.92;
+const HYPR_PROMPT_LENGTH = 1.1;
+const HYPR_PROMPT_WORDS: [number, number][] = [[0, 0.3], [0.36, 0.62], [0.68, 1]];
+
+function Hyprlander({ color }: { color: string }) {
+  const windows = useRef<(THREE.Group | null)[]>([]);
+  const typed = useRef<THREE.Group>(null);
+  const caret = useRef<THREE.Mesh>(null);
+  const agent = useRef<THREE.Group>(null);
+  const agentFrame = useMemo<[number, number, number][]>(() => {
+    const w = 0.96;
+    const h = 0.6;
+    const z = 0.04;
+    return [[-w, -h, z], [w, -h, z], [w, -h, z], [w, h, z], [w, h, z], [-w, h, z], [-w, h, z], [-w, -h, z]];
+  }, []);
+
+  useFrame(({ clock }) => {
+    const layouts = HYPR_LAYOUTS.length;
+    const time = clock.elapsedTime + 1;
+    const index = Math.floor(time / HYPR_CYCLE_SECONDS) % layouts;
+    const local = time % HYPR_CYCLE_SECONDS;
+    const from = HYPR_LAYOUTS[index];
+    const to = HYPR_LAYOUTS[(index + 1) % layouts];
+    const morph = smooth((local - (HYPR_ACT_START + 0.2)) / (HYPR_ACT_SECONDS - 0.2));
+    windows.current.forEach((group, i) => {
+      if (!group) return;
+      const a = from[i];
+      const b = to[i];
+      const lerp = (k: number) => a[k] + (b[k] - a[k]) * morph;
+      group.position.set(lerp(0), lerp(1), 0);
+      group.scale.set(Math.max(lerp(2) - HYPR_GAP, 0.001), Math.max(lerp(3) - HYPR_GAP, 0.001), 1);
+    });
+    const typing = local < HYPR_ACT_START + HYPR_ACT_SECONDS ? smooth(local / HYPR_TYPE_SECONDS) : 1 - smooth((local - HYPR_ACT_START - HYPR_ACT_SECONDS) / 0.4);
+    if (typed.current) typed.current.scale.x = Math.max(typing, 0.001);
+    if (caret.current) {
+      caret.current.position.x = -HYPR_PROMPT_LENGTH / 2 + typing * HYPR_PROMPT_LENGTH;
+      caret.current.visible = Math.floor(clock.elapsedTime * 4) % 2 === 0;
+    }
+    if (agent.current) agent.current.visible = local > HYPR_ACT_START && local < HYPR_ACT_START + HYPR_ACT_SECONDS;
+  });
+
+  return (
+    <group position={[0, 0.1, 0]} scale={0.95}>
+      <Block size={[0.7, 0.04, 0.4]} position={[0, 0, -0.1]} color={color} />
+      <Block size={[0.12, 0.3, 0.1]} position={[0, 0.04, -0.1]} color={color} />
+      <group position={[0, HYPR_SCREEN_Y, -0.1]}>
+        <mesh>
+          <boxGeometry args={[1.98, 1.28, 0.06]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          <Edges color={color} />
+        </mesh>
+        <group position={[0, 0, 0.04]}>
+          {[0, 1, 2, 3].map((i) => (
+            <group
+              key={i}
+              ref={(g) => {
+                windows.current[i] = g;
+              }}
+            >
+              <mesh>
+                <boxGeometry args={[1, 1, 0.03]} />
+                <meshBasicMaterial color={GROUND} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+                <Edges color={color} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+        <group ref={agent}>
+          <Lines points={agentFrame} color={RED} />
+        </group>
+      </group>
+      <Block size={[1.4, 0.05, 0.34]} position={[0, 0, 0.6]} color={color} />
+      <group position={[-HYPR_PROMPT_LENGTH / 2, 0.062, 0.6]}>
+        <group ref={typed}>
+          {HYPR_PROMPT_WORDS.map(([from, to]) => (
+            <mesh key={from} position={[((from + to) / 2) * HYPR_PROMPT_LENGTH, 0, 0]}>
+              <boxGeometry args={[(to - from) * HYPR_PROMPT_LENGTH, 0.012, 0.03]} />
+              <meshBasicMaterial color={color} />
+            </mesh>
+          ))}
+        </group>
+      </group>
+      <mesh ref={caret} position={[-HYPR_PROMPT_LENGTH / 2, 0.065, 0.6]}>
+        <boxGeometry args={[0.03, 0.02, 0.1]} />
+        <meshBasicMaterial color={RED} />
+      </mesh>
+    </group>
+  );
+}
+
+// A UI mockup is scanned top to bottom (redline) while the matching Flutter
+// code writes itself line by line on the slab beside it.
+const FLUTTER_CODE: [number, number][] = [
+  [0, 0.5], [0.08, 0.62], [0.16, 0.4], [0.16, 0.7], [0.08, 0.3], [0.08, 0.58],
+  [0.16, 0.44], [0.16, 0.66], [0.08, 0.3], [0.08, 0.5], [0.16, 0.6], [0, 0.2],
+];
+const FLUTTER_SCAN_SECONDS = 6;
+const FLUTTER_HOLD_SECONDS = 1.4;
+const FLUTTER_TOP = 1.2;
+const FLUTTER_BOTTOM = 0.06;
+const FLUTTER_UI_X = -0.78;
+const FLUTTER_CODE_X = 0.72;
+
+function flutterLineY(i: number) {
+  return 1.18 - i * 0.092;
+}
+
+function FlutterGenerator({ color }: { color: string }) {
+  const lines = useRef<(THREE.Group | null)[]>([]);
+  const scan = useRef<THREE.Mesh>(null);
+  const bridge = useRef<THREE.LineSegments>(null);
+  const uiLines = useMemo(() => {
+    const pts: [number, number, number][] = [];
+    const rect = (x0: number, y0: number, x1: number, y1: number) => pts.push([x0, y0, 0.03], [x1, y0, 0.03], [x1, y0, 0.03], [x1, y1, 0.03], [x1, y1, 0.03], [x0, y1, 0.03], [x0, y1, 0.03], [x0, y0, 0.03]);
+    rect(-0.29, 1.08, 0.29, 1.2);
+    rect(-0.29, 0.58, 0.29, 0.98);
+    pts.push([-0.29, 0.58, 0.03], [0.29, 0.98, 0.03], [-0.29, 0.98, 0.03], [0.29, 0.58, 0.03]);
+    pts.push([-0.29, 0.46, 0.03], [0.2, 0.46, 0.03], [-0.29, 0.36, 0.03], [0.12, 0.36, 0.03]);
+    rect(-0.18, 0.1, 0.18, 0.24);
+    return pts;
+  }, []);
+  const bridgeGeometry = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(6), 3));
+    return g;
+  }, []);
+
+  useFrame(({ clock }) => {
+    const total = FLUTTER_SCAN_SECONDS + FLUTTER_HOLD_SECONDS;
+    const t = (clock.elapsedTime + 3) % total;
+    const progress = Math.min(t / FLUTTER_SCAN_SECONDS, 1);
+    const clear = t > total - 0.4 ? smooth((t - (total - 0.4)) / 0.4) : 0;
+    const scanY = FLUTTER_TOP + (FLUTTER_BOTTOM - FLUTTER_TOP) * progress;
+    const reached = progress * FLUTTER_CODE.length;
+    if (scan.current) scan.current.position.y = scanY;
+    lines.current.forEach((group, i) => {
+      if (!group) return;
+      const reveal = Math.min(Math.max(reached - i, 0), 1);
+      group.scale.x = Math.max(reveal * (1 - clear), 0.001);
+    });
+    const current = Math.min(Math.floor(reached), FLUTTER_CODE.length - 1);
+    if (bridge.current) {
+      const position = bridge.current.geometry.attributes.position;
+      (position.array as Float32Array).set([FLUTTER_UI_X + 0.32, scanY, 0.03, FLUTTER_CODE_X - 0.52, flutterLineY(current), 0.03]);
+      position.needsUpdate = true;
+      bridge.current.visible = progress < 1;
+    }
+  });
+
+  return (
+    <group position={[0, 0.1, 0]} scale={0.88}>
+      <group position={[FLUTTER_UI_X, 0, 0]}>
+        <Block size={[0.7, 1.3, 0.05]} color={color} />
+        <Lines points={uiLines} color={SOFT} />
+        <mesh ref={scan} position={[0, FLUTTER_TOP, 0.032]}>
+          <boxGeometry args={[0.66, 0.014, 0.01]} />
+          <meshBasicMaterial color={RED} />
+        </mesh>
+      </group>
+      <group position={[FLUTTER_CODE_X, 0, 0]}>
+        <Block size={[1.1, 1.3, 0.05]} color={color} />
+        {FLUTTER_CODE.map(([indent, length], i) => (
+          <group
+            key={i}
+            ref={(g) => {
+              lines.current[i] = g;
+            }}
+            position={[-0.5 + indent, flutterLineY(i), 0.03]}
+          >
+            <mesh position={[length / 2, 0, 0]}>
+              <boxGeometry args={[length, 0.014, 0.006]} />
+              <meshBasicMaterial color={color} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+      <lineSegments ref={bridge} geometry={bridgeGeometry} frustumCulled={false}>
+        <lineBasicMaterial color={RED} />
+      </lineSegments>
+    </group>
+  );
+}
+
+// A fixed harness (output panel plus a socket) takes different model modules
+// in turn. A redline leader picks the module, it seats, the same output
+// streams, then it swaps out.
+const MACH_MODULES = 4;
+const MACH_SLOT_SECONDS = 3.2;
+const MACH_SEAT_Y = 0.12;
+const MACH_SEAT_Z = 0.1;
+const MACH_REST_Z = 0.8;
+const MACH_REST_X = [-0.9, -0.3, 0.3, 0.9];
+const MACH_LINES: [number, number][] = [[0, 0.9], [0.1, 0.7], [0.1, 0.95], [0, 0.5], [0.1, 0.85], [0.1, 0.6], [0, 0.8]];
+
+function MachModuleShape({ kind, color }: { kind: number; color: string }) {
+  const fill = <meshBasicMaterial color={GROUND} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />;
+  if (kind === 0) {
+    return (
+      <mesh position={[0, 0.15, 0]}>
+        <boxGeometry args={[0.3, 0.3, 0.3]} />
+        {fill}
+        <Edges color={color} />
+      </mesh>
+    );
+  }
+  if (kind === 1) {
+    return (
+      <mesh position={[0, 0.15, 0]}>
+        <cylinderGeometry args={[0.17, 0.17, 0.3, 8]} />
+        {fill}
+        <Edges color={color} />
+      </mesh>
+    );
+  }
+  if (kind === 2) {
+    return (
+      <mesh position={[0, 0.22, 0]}>
+        <octahedronGeometry args={[0.22, 0]} />
+        {fill}
+        <Edges color={color} />
+      </mesh>
+    );
+  }
+  return (
+    <mesh position={[0, 0.18, 0]}>
+      <coneGeometry args={[0.2, 0.36, 5]} />
+      {fill}
+      <Edges color={color} />
+    </mesh>
+  );
+}
+
+function Mach({ color }: { color: string }) {
+  const modules = useRef<(THREE.Group | null)[]>([]);
+  const output = useRef<(THREE.Group | null)[]>([]);
+  const socket = useRef<THREE.Group>(null);
+  const choice = useRef<THREE.LineSegments>(null);
+  const choiceGeometry = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(6), 3));
+    return g;
+  }, []);
+  const socketLines = useMemo<[number, number, number][]>(() => {
+    const h = 0.26;
+    const y = MACH_SEAT_Y + 0.004;
+    return [[-h, y, -h], [h, y, -h], [h, y, -h], [h, y, h], [h, y, h], [-h, y, h], [-h, y, h], [-h, y, -h]];
+  }, []);
+
+  useFrame(({ clock }) => {
+    const total = MACH_MODULES * MACH_SLOT_SECONDS;
+    const t = (clock.elapsedTime + 1.6) % total;
+    const active = Math.floor(t / MACH_SLOT_SECONDS);
+    const local = t % MACH_SLOT_SECONDS;
+    const into = smooth(local / 0.9);
+    const out = smooth((local - 2.3) / 0.9);
+    const seat = into * (1 - out);
+    modules.current.forEach((group, k) => {
+      if (!group) return;
+      const s = k === active ? seat : 0;
+      group.position.set(MACH_REST_X[k] * (1 - s), MACH_SEAT_Y * s, MACH_REST_Z + (MACH_SEAT_Z - MACH_REST_Z) * s);
+      group.position.y += Math.sin(s * Math.PI) * 0.45;
+    });
+    const stream = smooth((local - 0.9) / 1.3) * (1 - smooth((local - 2.3) / 0.5));
+    output.current.forEach((group, i) => {
+      if (group) group.scale.x = Math.max(Math.min(Math.max(stream * MACH_LINES.length - i, 0), 1), 0.001);
+    });
+    if (socket.current) socket.current.visible = local > 0.8 && local < 2.6;
+    if (choice.current) {
+      const position = choice.current.geometry.attributes.position;
+      (position.array as Float32Array).set([0, MACH_SEAT_Y + 0.03, MACH_SEAT_Z, MACH_REST_X[active], 0.3, MACH_REST_Z]);
+      position.needsUpdate = true;
+      choice.current.visible = local < 0.9;
+    }
+  });
+
+  return (
+    <group position={[0, 0.3, 0]} scale={0.88}>
+      <Block size={[1.5, 0.12, 0.8]} position={[0, 0, -0.15]} color={color} />
+      <Block size={[1.5, 1.1, 0.04]} position={[0, MACH_SEAT_Y, -0.45]} color={color} />
+      {MACH_LINES.map(([indent, length], i) => (
+        <group
+          key={i}
+          ref={(g) => {
+            output.current[i] = g;
+          }}
+          position={[-0.66 + indent, 1.0 - i * 0.085 + MACH_SEAT_Y - 0.04, -0.425]}
+        >
+          <mesh position={[length / 2, 0, 0]}>
+            <boxGeometry args={[length, 0.014, 0.006]} />
+            <meshBasicMaterial color={RED} />
+          </mesh>
+        </group>
+      ))}
+      <group position={[0, 0, MACH_SEAT_Z]}>
+        <Lines points={socketLines.map(([x, y, z]) => [x, y, z] as [number, number, number])} color={SOFT} />
+      </group>
+      <group ref={socket} position={[0, 0, MACH_SEAT_Z]}>
+        <Lines points={socketLines} color={RED} />
+      </group>
+      <lineSegments ref={choice} geometry={choiceGeometry} frustumCulled={false}>
+        <lineBasicMaterial color={RED} />
+      </lineSegments>
+      {Array.from({ length: MACH_MODULES }, (_, k) => (
+        <group
+          key={k}
+          ref={(g) => {
+            modules.current[k] = g;
+          }}
+          position={[MACH_REST_X[k], 0, MACH_REST_Z]}
+        >
+          <MachModuleShape kind={k} color={color} />
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function Crio({ color }: { color: string }) {
   return (
     <group>
@@ -633,6 +963,9 @@ const models: Record<string, (p: { color: string }) => React.ReactElement> = {
   dictate: Dictate,
   timbre: Timbre,
   gobble: Gobble,
+  mach: Mach,
+  hyprlander: Hyprlander,
+  fluttergenerator: FlutterGenerator,
   crio: Crio,
   anb: Anb,
   gsoc: Gsoc,

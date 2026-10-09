@@ -24,7 +24,7 @@ const entries: Entry[] = [
     name: p.name,
     href: `/projects/${p.slug}`,
     line: p.points[0],
-    metric: `${p.metrics[0].label}: ${p.metrics[0].after.display}`,
+    metric: p.metrics[0] ? `${p.metrics[0].label}: ${p.metrics[0].after.display}` : p.kind,
     kind: "project",
   })),
 ];

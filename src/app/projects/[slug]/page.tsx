@@ -2,12 +2,12 @@ import { ArrowLeft, ArrowRight, ArrowUpRight } from "@phosphor-icons/react/dist/
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Construction } from "@/components/construction";
 import { MetricDrawing } from "@/components/drafting/dimension";
 import { FlowDiagram } from "@/components/drafting/flow-diagram";
 import { Plot } from "@/components/drafting/plot";
 import { ModelFigure } from "@/components/work-scene/model-figure";
 import { diagrams } from "@/content/diagrams";
+import { fitHeading } from "@/lib/fit-heading";
 import { projectPeriod, projects } from "@/content/site";
 
 export function generateStaticParams() {
@@ -21,7 +21,6 @@ export async function generateMetadata({ params }: PageProps<"/projects/[slug]">
 }
 
 const statusLabel = { building: "In progress", shipped: "Shipped", archived: "Archived" } as const;
-const caseStudyPlaceholderSections = ["Why I built it", "The hard part", "Decisions", "What I learned"];
 
 function Spec({ term, children }: { term: string; children: React.ReactNode }) {
   return (
@@ -39,7 +38,6 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
   const project = projects[index];
   const next = projects[(index + 1) % projects.length];
   const diagram = diagrams[project.slug];
-  const caseStudy = project.caseStudy ?? caseStudyPlaceholderSections.map((heading) => ({ heading, body: "" }));
 
   return (
     <article className="mx-auto max-w-(--sheet-max) px-(--gutter) pb-24 pt-10">
@@ -49,7 +47,12 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
 
       <header className="mt-8 grid items-center gap-6 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)]">
         <div>
-          <h1 className="font-display text-7xl font-semibold uppercase leading-[0.88] sm:text-8xl xl:text-[10rem]">{project.name}</h1>
+          <h1
+            style={fitHeading(project.name, 0.43)}
+            className="font-display font-semibold uppercase leading-[0.88] [--h-base:4.5rem] sm:[--h-base:6rem] xl:[--h-base:10rem] text-[length:min(var(--h-base),var(--fit-narrow))] lg:text-[length:min(var(--h-base),var(--fit-wide))]"
+          >
+            {project.name}
+          </h1>
           <p className="mt-6 text-xl text-ink sm:text-2xl">{project.kind}</p>
           <p className="mt-2 max-w-[48ch] text-lg text-ink-soft">{project.summary}</p>
           {project.liveUrl ? (
@@ -60,6 +63,17 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
               className="group mt-6 inline-flex items-center gap-2 border border-ink px-4 py-3 font-display text-lg font-semibold uppercase tracking-[0.02em] transition-colors duration-200 hover:bg-ink hover:text-sheet active:translate-y-px"
             >
               Try the live app
+              <ArrowUpRight size={18} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" aria-hidden />
+            </a>
+          ) : null}
+          {project.repoUrl ? (
+            <a
+              href={project.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group mt-6 inline-flex items-center gap-2 border border-ink px-4 py-3 font-display text-lg font-semibold uppercase tracking-[0.02em] transition-colors duration-200 hover:bg-ink hover:text-sheet active:translate-y-px"
+            >
+              View the source
               <ArrowUpRight size={18} className="transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" aria-hidden />
             </a>
           ) : null}
@@ -78,6 +92,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
         </Spec>
         <Spec term="Built with">
           <ul className="flex flex-wrap gap-2">
+            {project.stack.length === 0 ? <li className="lettering text-ink-faint sm:text-[0.8125rem]">Not chosen yet</li> : null}
             {project.stack.map((tool) => (
               <li key={tool} className="lettering border border-rule px-2.5 py-1 text-ink sm:text-[0.8125rem]">
                 {tool}
@@ -87,13 +102,15 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
         </Spec>
       </dl>
 
-      <section aria-label="By the numbers" className="mt-20">
-        <Plot className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
-          {project.metrics.map((metric) => (
-            <MetricDrawing key={metric.label} metric={metric} />
-          ))}
-        </Plot>
-      </section>
+      {project.metrics.length ? (
+        <section aria-label="By the numbers" className="mt-20">
+          <Plot className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
+            {project.metrics.map((metric) => (
+              <MetricDrawing key={metric.label} metric={metric} />
+            ))}
+          </Plot>
+        </section>
+      ) : null}
 
       {diagram ? (
         <section aria-label="How it works" className="mt-24 border-t border-rule pt-12">
@@ -108,11 +125,11 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
             <li key={point}>{point}</li>
           ))}
         </ul>
-        {caseStudy.map((section) => (
+        {project.caseStudy.map((section) => (
           <section key={section.heading} className="contents">
             <h2 className="font-display text-3xl font-semibold uppercase">{section.heading}</h2>
             <div className="max-w-[68ch]">
-              {section.body ? <p className="text-lg text-ink-soft">{section.body}</p> : <Construction note="case study copy" lines={2} />}
+              <p className="text-lg text-ink-soft">{section.body}</p>
             </div>
           </section>
         ))}

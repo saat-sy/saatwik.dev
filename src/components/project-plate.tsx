@@ -2,7 +2,7 @@ import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { MetricDrawing } from "@/components/drafting/dimension";
 import { Plot } from "@/components/drafting/plot";
-import { formatRange, type Project } from "@/content/site";
+import { projectPeriod, type Project } from "@/content/site";
 
 /** A project as a drawing plate: name at display scale, numbers drawn to measure. */
 export function ProjectPlate({ project, headingLevel = 3 }: { project: Project; headingLevel?: 2 | 3 }) {
@@ -18,7 +18,7 @@ export function ProjectPlate({ project, headingLevel = 3 }: { project: Project; 
               <span aria-hidden>/</span>
             </>
           ) : null}
-          {formatRange(project.start, project.end)}
+          {projectPeriod(project)}
         </p>
         <Heading className="mt-2 font-display text-6xl font-semibold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">{project.name}</Heading>
         <p className="mt-3 text-lg text-ink">{project.kind}</p>

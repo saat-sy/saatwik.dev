@@ -8,7 +8,7 @@ import { FlowDiagram } from "@/components/drafting/flow-diagram";
 import { Plot } from "@/components/drafting/plot";
 import { ModelFigure } from "@/components/work-scene/model-figure";
 import { diagrams } from "@/content/diagrams";
-import { formatRange, projects } from "@/content/site";
+import { projectPeriod, projects } from "@/content/site";
 
 export function generateStaticParams() {
   return projects.map((project) => ({ slug: project.slug }));
@@ -74,7 +74,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
           </span>
         </Spec>
         <Spec term="Period">
-          <span className="font-display text-xl font-semibold uppercase">{formatRange(project.start, project.end)}</span>
+          <span className="font-display text-xl font-semibold uppercase">{projectPeriod(project)}</span>
         </Spec>
         <Spec term="Built with">
           <ul className="flex flex-wrap gap-2">

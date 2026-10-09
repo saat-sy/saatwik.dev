@@ -463,6 +463,118 @@ function Timbre({ color }: { color: string }) {
   );
 }
 
+// A 4x4 board of 2048-style tiles and a chess pawn. The pawn hops, a tile
+// slides along its row onto its twin, and the pair merges into one taller
+// redline tile before the board resets.
+const GOBBLE_CELL = 0.4;
+const GOBBLE_LEVELS = [0.1, 0.16, 0.24, 0.34];
+const GOBBLE_TILES: { i: number; j: number; level: number }[] = [
+  { i: 0, j: 0, level: 0 },
+  { i: 3, j: 0, level: 1 },
+  { i: 2, j: 3, level: 0 },
+  { i: 0, j: 3, level: 2 },
+  { i: 3, j: 2, level: 0 },
+];
+const GOBBLE_ROW = 2;
+const GOBBLE_BOARD_Y = 0.06;
+const GOBBLE_LOOP_SECONDS = 6;
+
+function gobbleCoord(index: number) {
+  return (index - 1.5) * GOBBLE_CELL;
+}
+
+function GobbleTile({ level, color, tile }: { level: number; color: string; tile?: React.Ref<THREE.Group> }) {
+  return (
+    <group ref={tile} scale={[1, GOBBLE_LEVELS[level], 1]}>
+      <mesh position={[0, 0.5, 0]}>
+        <boxGeometry args={[GOBBLE_CELL * 0.84, 1, GOBBLE_CELL * 0.84]} />
+        <meshBasicMaterial color={GROUND} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <Edges color={color} />
+      </mesh>
+    </group>
+  );
+}
+
+function Gobble({ color }: { color: string }) {
+  const slider = useRef<THREE.Group>(null);
+  const sliderTile = useRef<THREE.Group>(null);
+  const target = useRef<THREE.Group>(null);
+  const merged = useRef<THREE.Group>(null);
+  const pawn = useRef<THREE.Group>(null);
+  const grid = useMemo(() => {
+    const pts: [number, number, number][] = [];
+    const half = GOBBLE_CELL * 2;
+    for (let n = 0; n <= 4; n++) {
+      const c = -half + n * GOBBLE_CELL;
+      pts.push([c, 0, -half], [c, 0, half], [-half, 0, c], [half, 0, c]);
+    }
+    return pts;
+  }, []);
+
+  useFrame(({ clock }) => {
+    const t = (clock.elapsedTime + 3) % GOBBLE_LOOP_SECONDS;
+    const hop = (from: number, to: number, u: number) => {
+      const k = smooth(u);
+      return { z: from + (to - from) * k, lift: Math.sin(Math.min(Math.max(u, 0), 1) * Math.PI) * 0.22 };
+    };
+    if (pawn.current) {
+      const a = gobbleCoord(0);
+      const b = gobbleCoord(1);
+      const move = t < 4.4 ? hop(a, b, (t - 1) / 0.8) : hop(b, a, (t - 4.4) / 0.8);
+      pawn.current.position.set(gobbleCoord(1), GOBBLE_BOARD_Y + move.lift, move.z);
+    }
+    const slide = smooth((t - 1.8) / 0.8);
+    const back = t >= 5.2 ? smooth((t - 5.2) / 0.8) : t >= 2.6 ? 0.001 : 1;
+    if (slider.current) slider.current.position.x = t < 5.2 ? gobbleCoord(0) + (gobbleCoord(2) - gobbleCoord(0)) * slide : gobbleCoord(0);
+    if (sliderTile.current) sliderTile.current.scale.y = GOBBLE_LEVELS[1] * back;
+    if (target.current) target.current.scale.y = GOBBLE_LEVELS[1] * back;
+    if (merged.current) {
+      const grow = t < 2.6 ? 0 : t < 3.4 ? smooth((t - 2.6) / 0.8) * (1 + Math.sin(((t - 2.6) / 0.8) * Math.PI) * 0.18) : t < 5.2 ? 1 : 1 - smooth((t - 5.2) / 0.6);
+      merged.current.scale.y = Math.max(GOBBLE_LEVELS[2] * grow, 0.001);
+    }
+  });
+
+  return (
+    <group position={[0, 0.45, 0]} scale={1.1}>
+      <Block size={[GOBBLE_CELL * 4 + 0.16, GOBBLE_BOARD_Y, GOBBLE_CELL * 4 + 0.16]} color={color} />
+      <group position={[0, GOBBLE_BOARD_Y + 0.002, 0]}>
+        <Lines points={grid} color={SOFT} />
+      </group>
+      <group position={[0, GOBBLE_BOARD_Y, 0]}>
+        {GOBBLE_TILES.map((tile) => (
+          <group key={`${tile.i}-${tile.j}`} position={[gobbleCoord(tile.i), 0, gobbleCoord(tile.j)]}>
+            <GobbleTile level={tile.level} color={color} />
+          </group>
+        ))}
+        <group ref={slider} position={[gobbleCoord(0), 0, gobbleCoord(GOBBLE_ROW)]}>
+          <GobbleTile level={1} color={color} tile={sliderTile} />
+        </group>
+        <group position={[gobbleCoord(2), 0, gobbleCoord(GOBBLE_ROW)]}>
+          <GobbleTile level={1} color={color} tile={target} />
+          <GobbleTile level={2} color={RED} tile={merged} />
+        </group>
+      </group>
+      <group ref={pawn}>
+        <mesh position={[0, 0.03, 0]}>
+          <cylinderGeometry args={[0.11, 0.12, 0.06, 8]} />
+          <meshBasicMaterial color={GROUND} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <Edges color={color} />
+        </mesh>
+        <mesh position={[0, 0.17, 0]}>
+          <cylinderGeometry args={[0.04, 0.085, 0.22, 8]} />
+          <meshBasicMaterial color={GROUND} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <Edges color={color} />
+        </mesh>
+        <mesh position={[0, 0.34, 0]}>
+          <icosahedronGeometry args={[0.075, 0]} />
+          <meshBasicMaterial color={GROUND} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <Edges color={color} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
 function Crio({ color }: { color: string }) {
   return (
     <group>
@@ -520,6 +632,7 @@ const models: Record<string, (p: { color: string }) => React.ReactElement> = {
   everygpu: EveryGpu,
   dictate: Dictate,
   timbre: Timbre,
+  gobble: Gobble,
   crio: Crio,
   anb: Anb,
   gsoc: Gsoc,

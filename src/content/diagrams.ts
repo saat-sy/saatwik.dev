@@ -45,4 +45,15 @@ export const diagrams: Record<string, Diagram> = {
     links: [{}, {}, { label: "new audio chunk every 2 s", hot: true }],
     footnote: "Timbre is live at timbreapp.tech, with sub-two-second end-to-end latency.",
   },
+  gobble: {
+    title: "One move, synced live",
+    steps: [
+      { label: "Your move", note: "chess-like movement and positioning" },
+      { label: "Gobble", note: "choose which tile to take and merge" },
+      { label: "Room state", note: "six-digit room on Cloud Firestore" },
+      { label: "Opponent", note: "listens to the room and takes their turn" },
+    ],
+    links: [{}, {}, { label: "moves and turns sync live", hot: true }],
+    footnote: "The goal is to eliminate the opponent’s color from the board.",
+  },
 };

@@ -152,8 +152,9 @@ export type Project = {
   /** Shown on the home page. */
   featured: boolean;
   kind: string;
-  start: string;
-  end: string;
+  /** Both omitted when the dates are not recorded. */
+  start?: string;
+  end?: string;
   summary: string;
   points: string[];
   metrics: Metric[];
@@ -282,6 +283,41 @@ export const projects: Project[] = [
       },
     ],
   },
+  {
+    slug: "gobble",
+    name: "Gobble",
+    status: "shipped",
+    featured: true,
+    kind: "1v1 strategy game",
+    summary: "A 1v1 strategy game that combines chess-like movement with 2048-style merging.",
+    points: [
+      "Built Gobble before college, learning Flutter and the BLoC pattern from scratch.",
+      "Designed a turn-based game where players choose which tiles to gobble, aiming to eliminate the opponent’s color from the board.",
+      "Combined chess-inspired movement and positioning with 2048-style tile merging, so winning depends on tactics rather than score alone.",
+      "Implemented real-time multiplayer with Cloud Firestore: players create or join a six-digit room, subscribe to game-state updates, and synchronize moves and turns live.",
+    ],
+    metrics: [{ label: "Digits in a room code", after: { value: 6, unit: "", display: "6" } }],
+    stack: ["Flutter", "Dart", "BLoC", "Cloud Firestore", "Firebase"],
+    liveUrl: "https://gobble-game.web.app/",
+    caseStudy: [
+      {
+        heading: "Why I built it",
+        body: "Gobble started as a fun idea: combine the tactical decisions of chess with the satisfying merges of 2048. I built the entire game before college while teaching myself Flutter and BLoC from scratch.",
+      },
+      {
+        heading: "How it plays",
+        body: "Gobble is a 1v1 game, not a score chase. Players move and gobble tiles across the board, and the goal is to eliminate the opponent’s color. Every move is a decision about positioning, timing, and which tile is worth taking.",
+      },
+      {
+        heading: "Multiplayer",
+        body: "I used Cloud Firestore as the real-time game layer. A player creates a six-digit room code, a second player joins it, and both clients listen to the shared room state. Each move updates the board action and whose turn comes next.",
+      },
+      {
+        heading: "What I learned",
+        body: "Gobble was my first full game project. It taught me Flutter, BLoC state management, and how to make a turn-based multiplayer game stay synchronized in real time.",
+      },
+    ],
+  },
 ];
 
 /** Smaller work listed on the projects page without a case study. */
@@ -334,4 +370,10 @@ function formatMonth(ym: string) {
 
 export function formatRange(start: string, end: string) {
   return `${formatMonth(start)} - ${formatMonth(end)}`;
+}
+
+/** A project's period, or "Live" when only its published app is recorded. */
+export function projectPeriod(project: Pick<Project, "start" | "end" | "liveUrl">) {
+  if (project.start && project.end) return formatRange(project.start, project.end);
+  return project.liveUrl ? "Live" : "";
 }

@@ -1,5 +1,5 @@
-import { apiIndex, apiJson } from "@/lib/api";
+import { apiJson, apiVersions } from "@/lib/api";
 
 export function GET() {
-  return apiJson(apiIndex());
+  return apiJson(apiVersions());
 }

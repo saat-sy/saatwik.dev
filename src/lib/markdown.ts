@@ -1,3 +1,4 @@
+import { developerSections, developersIntro } from "./developers";
 import { diagrams } from "@/content/diagrams";
 import { aboutParagraphs, contactParagraphs, privacyParagraphs, privacyUpdated } from "@/content/pages";
 import type { Paragraph } from "@/content/pages";
@@ -54,7 +55,7 @@ function home() {
     `All projects: ${link("projects", "/projects")}`,
     "## Contact",
     contactLines.join("\n"),
-    `More: ${link("About", "/about")} · ${link("Contact", "/contact")} · ${link("Privacy", "/privacy")}`,
+    `More: ${link("About", "/about")} · ${link("Contact", "/contact")} · ${link("Developers", "/developers")} · ${link("Privacy", "/privacy")}`,
   ].join("\n\n");
 }
 
@@ -124,9 +125,21 @@ function privacy() {
   return ["# Privacy", `Last updated ${privacyUpdated}.`, privacyParagraphs.map(paragraph).join("\n\n")].join("\n\n");
 }
 
+function developers() {
+  return [
+    "# Developers",
+    developersIntro,
+    ...developerSections().flatMap((section) => [
+      `## ${section.heading}`,
+      ...section.paragraphs.map(paragraph),
+      ...(section.code ? ["```\n" + section.code + "\n```"] : []),
+    ]),
+  ].join("\n\n");
+}
+
 /** Every path that has a Markdown rendering, as it appears in the URL. */
 export function markdownPaths(): string[] {
-  return ["/", "/projects", "/about", "/contact", "/privacy", ...projects.map((p) => `/projects/${p.slug}`)];
+  return ["/", "/projects", "/about", "/contact", "/developers", "/privacy", ...projects.map((p) => `/projects/${p.slug}`)];
 }
 
 /** The Markdown for a page path, or null when the site has no such page. */
@@ -139,6 +152,7 @@ export function markdownFor(pathname: string): string | null {
     : path === "/projects" ? projectsIndex()
     : path === "/about" ? about()
     : path === "/contact" ? contact()
+    : path === "/developers" ? developers()
     : path === "/privacy" ? privacy()
     : project ? projectPage(project)
     : null;

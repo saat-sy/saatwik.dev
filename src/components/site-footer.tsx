@@ -18,6 +18,11 @@ export function SiteFooter() {
             </Link>
           </li>
           <li>
+            <Link href="/developers" className="hover:text-band-ink">
+              Developers
+            </Link>
+          </li>
+          <li>
             <Link href="/privacy" className="hover:text-band-ink">
               Privacy
             </Link>

@@ -16,8 +16,8 @@ describe("markdownFor", () => {
   });
 
   it("covers the home page, listings, text pages and every project", () => {
-    expect(markdownPaths()).toEqual(expect.arrayContaining(["/", "/projects", "/about", "/contact", "/privacy"]));
-    expect(markdownPaths()).toHaveLength(5 + projects.length);
+    expect(markdownPaths()).toEqual(expect.arrayContaining(["/", "/projects", "/about", "/contact", "/developers", "/privacy"]));
+    expect(markdownPaths()).toHaveLength(6 + projects.length);
   });
 
   it("ignores a trailing slash and rejects unknown paths", () => {
@@ -34,6 +34,13 @@ describe("markdownFor", () => {
 
   it("turns in-text links into absolute Markdown links", () => {
     expect(markdownFor("/about")).toContain("[Dictate](https://saatwik.dev/projects/dictate)");
+  });
+
+  it("renders the developer docs with their code blocks fenced", () => {
+    const body = markdownFor("/developers")!;
+    for (const heading of ["Overview", "Endpoints", "Versioning and deprecation", "Rate limits", "Errors", "Command line"]) expect(body).toContain(`## ${heading}`);
+    expect(body.match(/^```$/gm)!.length % 2).toBe(0);
+    expect(body).toContain("[/openapi.json](https://saatwik.dev/openapi.json)");
   });
 
   it("gives the trust pages at least 500 characters", () => {

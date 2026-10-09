@@ -26,9 +26,17 @@ describe("/llms.txt", () => {
     for (const operationId of ["getProfile", "listExperience", "listProjects", "getProject"]) expect(text).toContain(operationId);
   });
 
+  it("states the versioned base, the versioning policy, the rate limit and the CLI", async () => {
+    const text = await getLlms().text();
+    expect(text).toContain("https://saatwik.dev/api/v1");
+    expect(text).toContain("/api/v1/profile");
+    expect(text).not.toMatch(/\s\/api\/(profile|projects|experience)/);
+    for (const word of ["Deprecation", "Sunset", "6 months", "60 requests per 60 seconds", "RateLimit-*", "Retry-After", "npx saatwik"]) expect(text).toContain(word);
+  });
+
   it("links the OpenAPI document, the API, every featured project and the sitemap", async () => {
     const text = await getLlms().text();
-    for (const url of ["/openapi.json", "/api", "/.well-known/api-catalog", "/sitemap.xml"]) expect(text).toContain(`(https://saatwik.dev${url})`);
+    for (const url of ["/openapi.json", "/api", "/api/v1", "/developers", "/.well-known/api-catalog", "/sitemap.xml"]) expect(text).toContain(`(https://saatwik.dev${url})`);
     for (const p of projects.filter((p) => p.featured)) expect(text).toContain(`(https://saatwik.dev/projects/${p.slug})`);
   });
 });
@@ -78,6 +86,7 @@ describe("crawler files", () => {
     const urls = sitemap().map((entry) => entry.url);
     for (const path of markdownPaths()) expect(urls).toContain(`https://saatwik.dev${path === "/" ? "" : path}`);
     expect(urls).toContain("https://saatwik.dev/privacy");
+    expect(urls).toContain("https://saatwik.dev/developers");
   });
 
   it("points at the sitemap", () => {

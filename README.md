@@ -68,7 +68,7 @@ Availability ("open to full-time roles") is shown only when a visitor runs `cat 
 
 ```
 src/
-  app/                   routes: home, /projects, /projects/[slug], /about, /contact, /privacy, /api, /md
+  app/                   routes: home, /projects, /projects/[slug], /about, /contact, /developers, /privacy, /api, /md
                          plus layout, template (page transitions), metadata, sitemap, robots, OG image, icon
   components/
     terminal/            the working shell in the hero
@@ -82,6 +82,7 @@ src/
   lib/                   GSAP registration, media and viewport hooks; Markdown, API, OpenAPI and llms.txt builders
   proxy.ts               Accept: text/markdown negotiation and API method handling
 tests/                   Vitest suites
+cli/                     the saatwik command line client (own package.json)
 ```
 
 ## For agents
@@ -91,13 +92,21 @@ Everything is readable without a browser, from the same content as the pages.
 | What | Where |
 | --- | --- |
 | Any page as Markdown: send `Accept: text/markdown` to its normal URL (the response has `Vary: Accept`; unknown paths get a Markdown 404) | `src/proxy.ts` rewrites to `src/app/md/[[...path]]`, rendered by `src/lib/markdown.ts` |
-| Read-only JSON API: `/api`, `/api/profile`, `/api/experience`, `/api/projects`, `/api/projects/{slug}`; every error is `{"error": {status, code, message, hint, documentation}}` | `src/app/api/`, `src/lib/api.ts` |
+| Read-only JSON API, versioned in the path: `/api` lists versions, `/api/v1` lists endpoints (`profile`, `experience`, `projects`, `projects/{slug}`); every error is `{"error": {status, code, message, hint, documentation}}`; responses carry `API-Version` and `RateLimit-*` (60 requests per 60 seconds per client, `429` with `Retry-After`) | `src/app/api/`, `src/lib/api.ts`, `src/lib/rate-limit.ts`, enforced in `src/proxy.ts` |
+| API docs page at `/developers` and the same text as Markdown | `src/lib/developers.ts` |
+| Command line client (`npx saatwik --help`), a separate npm package | `cli/` |
 | OpenAPI 3.1 description of the API at `/openapi.json` | `src/lib/openapi.ts` |
 | Guide for agents, with when-to-use, at `/llms.txt` | `src/lib/llms.ts` |
 | RFC 9727 API catalog at `/.well-known/api-catalog` | `src/app/.well-known/api-catalog/route.ts` |
 | schema.org JSON-LD on the home page | `src/lib/structured-data.ts` |
 
-When you add an endpoint, add it to `src/lib/openapi.ts`, `apiIndex()` in `src/lib/api.ts` and `src/lib/llms.ts`; the tests fail if the spec and the responses disagree. A new page needs an entry in `markdownFor()` and `src/app/sitemap.ts`.
+When you add an endpoint, add it to `src/lib/openapi.ts`, `endpoints` in `src/lib/api.ts` and `src/lib/llms.ts`. A breaking change gets a new `/api/v2` path and `API_VERSION` stays the current one; the old version keeps working for the period in `SUPPORT_MONTHS`.
+
+To publish the CLI: `cd cli && npm publish` (needs an npm login; bump `cli/package.json` first when the API changes).
+
+The rate limiter counts per server instance, so it is best-effort; use a shared store (for example Upstash Redis) if it needs to be exact.
+
+ the tests fail if the spec and the responses disagree. A new page needs an entry in `markdownFor()` and `src/app/sitemap.ts`.
 
 ## Motion and accessibility
 

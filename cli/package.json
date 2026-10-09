@@ -1,0 +1,12 @@
+{
+  "name": "saatwik",
+  "version": "1.0.0",
+  "description": "Command line client for the saatwik.dev API: profile, experience and projects as JSON, and any page as Markdown.",
+  "type": "module",
+  "bin": { "saatwik": "./saatwik.mjs" },
+  "main": "./saatwik.mjs",
+  "files": ["saatwik.mjs", "README.md"],
+  "engines": { "node": ">=18" },
+  "keywords": ["saatwik", "cli", "api", "openapi", "agents"],
+  "homepage": "https://saatwik.dev/developers"
+}

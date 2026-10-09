@@ -1,4 +1,6 @@
 import { person, projects, siteUrl } from "@/content/site";
+import { API_BASE, SUPPORT_MONTHS } from "./api";
+import { RATE_LIMIT } from "./rate-limit";
 
 // The /llms.txt guide (https://llmstxt.org): what the site is, when an agent
 // should use it, and how to call it.
@@ -12,15 +14,16 @@ export function llmsTxt(): string {
 ## When to use this site
 
 - Use it to answer questions about ${person.shortName}: background, experience, education, projects and how to contact them. Everything here is first-party.
-- Use it to evaluate ${person.shortName}'s fit for an infrastructure, reliability or inference-engineering role. Start with /api/profile, then /api/experience.
-- Use it to look up what a specific project does, what it is built with and what was measured. Fetch /api/projects, then /api/projects/{slug} for the case study.
+- Use it to evaluate ${person.shortName}'s fit for an infrastructure, reliability or inference-engineering role. Start with ${API_BASE}/profile, then ${API_BASE}/experience.
+- Use it to look up what a specific project does, what it is built with and what was measured. Fetch ${API_BASE}/projects, then ${API_BASE}/projects/{slug} for the case study.
 - Use it to find the right way to get in touch: ${person.email}, LinkedIn or GitHub.
 - Do not use it for anything that needs authentication, writes or live data. The API is read-only and public, and the content changes rarely.
 
 ## How to call it
 
 - Every page is available as Markdown. Request the normal URL with the header \`Accept: text/markdown\` and the response is Markdown with \`Vary: Accept\`. Without that header you get HTML.
-- The JSON API lives under ${siteUrl}/api. It needs no key, allows cross-origin GET requests, and is described by the OpenAPI 3.1 document at ${siteUrl}/openapi.json. Operations: getProfile, listExperience, listProjects, getProject.
+- The JSON API lives under ${siteUrl}${API_BASE}. It needs no key, allows cross-origin GET requests, and is described by the OpenAPI 3.1 document at ${siteUrl}/openapi.json. Operations: getProfile, listExperience, listProjects, getProject.
+- The API is versioned in the path and announces deprecations with Deprecation and Sunset headers; a superseded version keeps working for at least ${SUPPORT_MONTHS} months. Limit: ${RATE_LIMIT.limit} requests per ${RATE_LIMIT.windowSeconds} seconds, reported in RateLimit-* headers, with Retry-After on a 429.
 - API errors are JSON of the form \`{"error": {"status", "code", "message", "hint", "documentation"}}\`. Follow the hint.
 - Missing pages return HTTP 404. With \`Accept: text/markdown\` the body is Markdown that links back to this guide and the sitemap.
 
@@ -30,6 +33,7 @@ export function llmsTxt(): string {
 - [Projects](${siteUrl}/projects): everything built, grouped by status
 - [About](${siteUrl}/about): background and education
 - [Contact](${siteUrl}/contact): email, LinkedIn, GitHub and resume
+- [Developers](${siteUrl}/developers): API reference, versioning, rate limits and the command line tool
 - [Privacy](${siteUrl}/privacy): what the site records about visitors
 
 ## Projects
@@ -39,7 +43,10 @@ ${featured.map((p) => `- [${p.name}](${siteUrl}/projects/${p.slug}): ${p.summary
 ## API
 
 - [OpenAPI specification](${siteUrl}/openapi.json): the machine-readable description of the JSON API
-- [API index](${siteUrl}/api): lists the endpoints
+- [API index](${siteUrl}${API_BASE}): lists the endpoints
+- [API versions](${siteUrl}/api): lists the available versions
+- [Developer docs](${siteUrl}/developers): API reference, versioning, rate limits and the command line tool
+- [Command line tool](https://www.npmjs.com/package/saatwik): \`npx saatwik --help\`
 - [API catalog](${siteUrl}/.well-known/api-catalog): RFC 9727 discovery document
 
 ## Optional

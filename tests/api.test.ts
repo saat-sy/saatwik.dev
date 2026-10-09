@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { GET as getIndex } from "@/app/api/route";
+import { GET as getVersions } from "@/app/api/route";
+import { GET as getIndex } from "@/app/api/v1/route";
 import { GET as getCatchAll } from "@/app/api/[...path]/route";
-import { GET as getExperience } from "@/app/api/experience/route";
-import { GET as getProfile } from "@/app/api/profile/route";
-import { GET as listProjects } from "@/app/api/projects/route";
-import { GET as getProject, generateStaticParams } from "@/app/api/projects/[slug]/route";
+import { GET as getExperience } from "@/app/api/v1/experience/route";
+import { GET as getProfile } from "@/app/api/v1/profile/route";
+import { GET as listProjects } from "@/app/api/v1/projects/route";
+import { GET as getProject, generateStaticParams } from "@/app/api/v1/projects/[slug]/route";
 import { projects } from "@/content/site";
 
 const list = (query = "") => listProjects(new Request(`https://saatwik.dev/api/projects${query}`));
@@ -20,11 +21,13 @@ async function expectError(response: Response, status: number, code: string) {
 }
 
 describe("successful responses", () => {
-  it("are JSON and readable cross-origin", async () => {
-    for (const response of [getIndex(), getProfile(), getExperience(), await list(), await one(projects[0].slug)]) {
+  it("are JSON, readable cross-origin and say which version answered", async () => {
+    for (const response of [getVersions(), getIndex(), getProfile(), getExperience(), await list(), await one(projects[0].slug)]) {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("application/json");
       expect(response.headers.get("access-control-allow-origin")).toBe("*");
+      expect(response.headers.get("api-version")).toBe("1");
+      expect(response.headers.get("access-control-expose-headers")).toContain("RateLimit-Remaining");
     }
   });
 
@@ -40,10 +43,18 @@ describe("successful responses", () => {
     expect(body.leadership.length).toBeGreaterThan(0);
   });
 
-  it("index the endpoints", async () => {
+  it("index the endpoints of this version", async () => {
     const body = await getIndex().json();
     expect(body.openapi).toBe("https://saatwik.dev/openapi.json");
+    expect(body.version).toBe("1");
+    expect(body.endpoints.map((e: { path: string }) => e.path)).toEqual(["/api/v1/profile", "/api/v1/experience", "/api/v1/projects", "/api/v1/projects/{slug}"]);
     expect(body.projectSlugs).toEqual(projects.map((p) => p.slug));
+  });
+
+  it("list the versions", async () => {
+    const body = await getVersions().json();
+    expect(body.versions).toEqual([{ version: "1", status: "current", url: "https://saatwik.dev/api/v1", openapi: "https://saatwik.dev/openapi.json" }]);
+    expect(body.documentation).toBe("https://saatwik.dev/developers");
   });
 });
 

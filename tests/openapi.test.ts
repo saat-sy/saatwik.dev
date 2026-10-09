@@ -1,18 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { GET as getOpenapi } from "@/app/openapi.json/route";
-import { GET as getExperience } from "@/app/api/experience/route";
-import { GET as getProfile } from "@/app/api/profile/route";
-import { GET as listProjects } from "@/app/api/projects/route";
-import { GET as getProject } from "@/app/api/projects/[slug]/route";
+import { GET as getExperience } from "@/app/api/v1/experience/route";
+import { GET as getProfile } from "@/app/api/v1/profile/route";
+import { GET as listProjects } from "@/app/api/v1/projects/route";
+import { GET as getProject } from "@/app/api/v1/projects/[slug]/route";
 import { projects } from "@/content/site";
 import { openapi } from "@/lib/openapi";
 
 type Schema = { $ref?: string; allOf?: Schema[]; type?: string; required?: string[]; properties?: Record<string, Schema>; items?: Schema; enum?: unknown[] };
-type Operation = { operationId?: string; description?: string; parameters?: { name: string; in: string; schema?: Schema; description?: string }[]; responses: Record<string, { content?: Record<string, { schema: Schema }> }> };
+type ApiResponse = { $ref?: string; headers?: Record<string, unknown>; content?: Record<string, { schema: Schema }> };
+type Operation = { operationId?: string; description?: string; parameters?: { name: string; in: string; schema?: Schema; description?: string }[]; responses: Record<string, ApiResponse> };
 
 const operations = Object.entries(openapi.paths).flatMap(([path, item]) =>
   Object.entries(item).map(([method, operation]) => ({ path, method, operation: operation as unknown as Operation })),
 );
+
+const resolveResponse = (response: ApiResponse): ApiResponse => (response.$ref ? (openapi.components.responses as Record<string, ApiResponse>)[response.$ref.split("/").pop()!] : response);
 
 const lookup = (ref: string): Schema => {
   const node = ref.replace("#/components/schemas/", "").split("/").reduce<unknown>((acc, key) => (acc as Record<string, unknown>)[key], openapi.components.schemas);
@@ -37,15 +40,44 @@ function refsIn(node: unknown): string[] {
 }
 
 describe("OpenAPI document", () => {
-  it("is OpenAPI 3.1 with a server and the four operations", () => {
+  it("is OpenAPI 3.1 with a versioned server and the four operations", () => {
     expect(openapi.openapi).toBe("3.1.0");
-    expect(openapi.servers[0].url).toBe("https://saatwik.dev");
+    expect(openapi.servers[0].url).toBe("https://saatwik.dev/api/v1");
     expect(operations.map((o) => `${o.method.toUpperCase()} ${o.path}`).sort()).toEqual([
-      "GET /api/experience",
-      "GET /api/profile",
-      "GET /api/projects",
-      "GET /api/projects/{slug}",
+      "GET /experience",
+      "GET /profile",
+      "GET /projects",
+      "GET /projects/{slug}",
     ]);
+  });
+
+  it("states the version and the versioning and rate limit policies", () => {
+    expect(openapi.info.version).toBe("1.0.0");
+    expect(openapi.info.description).toContain("## Versioning and deprecation");
+    for (const word of ["API-Version", "Deprecation", "Sunset", "successor-version", "6 months"]) expect(openapi.info.description).toContain(word);
+    expect(openapi.info.description).toContain("## Rate limits");
+    expect(openapi.info.description).toContain("60 requests per 60 seconds");
+  });
+
+  it("documents the rate limit headers on every success and a 429 response on every operation", () => {
+    for (const { operation, path } of operations) {
+      for (const name of ["API-Version", "RateLimit-Limit", "RateLimit-Remaining", "RateLimit-Reset", "RateLimit-Policy"]) expect(operation.responses["200"].headers, `${path} ${name}`).toHaveProperty(name);
+      const limited = resolveResponse(operation.responses["429"]);
+      expect(limited.headers, path).toHaveProperty("Retry-After");
+      expect(limited.content!["application/json"].schema.$ref).toBe("#/components/schemas/Error");
+    }
+    for (const name of Object.keys(openapi.components.headers)) expect(openapi.components.headers[name as keyof typeof openapi.components.headers].schema.type).toBeDefined();
+  });
+
+  it("types the top level of every 200 response, with properties and required keys", () => {
+    for (const { operation, path } of operations) {
+      const schema = operation.responses["200"].content!["application/json"].schema;
+      expect(schema.$ref, path).toBeUndefined();
+      expect(schema.allOf, path).toBeUndefined();
+      expect(schema.type, path).toBe("object");
+      expect(Object.keys(schema.properties ?? {}).length, path).toBeGreaterThan(0);
+      expect(schema.required?.length, path).toBeGreaterThan(0);
+    }
   });
 
   it("gives every operation a unique camelCase operationId and a description", () => {
@@ -73,7 +105,7 @@ describe("OpenAPI document", () => {
       expect(operation.responses["200"], path).toBeDefined();
       expect(operation.responses.default, path).toBeDefined();
       for (const [status, response] of Object.entries(operation.responses)) {
-        expect(response.content?.["application/json"]?.schema, `${path} ${status}`).toBeDefined();
+        expect(resolveResponse(response).content?.["application/json"]?.schema, `${path} ${status}`).toBeDefined();
       }
     }
   });
@@ -81,11 +113,14 @@ describe("OpenAPI document", () => {
   it("resolves every $ref", () => {
     const refs = refsIn(openapi);
     expect(refs.length).toBeGreaterThan(0);
-    for (const ref of refs) lookup(ref);
+    for (const ref of refs) {
+      const target = ref.replace("#/", "").split("/").reduce<unknown>((node, key) => (node as Record<string, unknown> | undefined)?.[key], openapi);
+      expect(target, ref).toBeDefined();
+    }
   });
 
   it("offers the project slugs as the path parameter's enum", () => {
-    const parameter = openapi.paths["/api/projects/{slug}"].get.parameters[0];
+    const parameter = openapi.paths["/projects/{slug}"].get.parameters[0];
     expect(parameter.schema.enum).toEqual(projects.map((p) => p.slug));
   });
 });
@@ -93,10 +128,10 @@ describe("OpenAPI document", () => {
 describe("OpenAPI document matches the API", () => {
   const slug = projects[0].slug;
   const responses: Record<string, () => Promise<Response> | Response> = {
-    "/api/profile": () => getProfile(),
-    "/api/experience": () => getExperience(),
-    "/api/projects": () => listProjects(new Request("https://saatwik.dev/api/projects")),
-    "/api/projects/{slug}": () => getProject(new Request(`https://saatwik.dev/api/projects/${slug}`), { params: Promise.resolve({ slug }) } as never),
+    "/profile": () => getProfile(),
+    "/experience": () => getExperience(),
+    "/projects": () => listProjects(new Request("https://saatwik.dev/api/v1/projects")),
+    "/projects/{slug}": () => getProject(new Request(`https://saatwik.dev/api/v1/projects/${slug}`), { params: Promise.resolve({ slug }) } as never),
   };
 
   it.each(Object.keys(responses))("%s returns every required property with a matching type", async (path) => {
@@ -119,6 +154,13 @@ describe("OpenAPI document matches the API", () => {
       }
     };
     check(body, operation.responses["200"].content!["application/json"].schema, path);
+  });
+});
+
+describe("OpenAPI error schema", () => {
+  it("lists every error code the API can return", () => {
+    const codes = (openapi.components.schemas.Error.properties.error.properties.code as { enum: string[] }).enum;
+    expect(codes).toEqual(["not_found", "method_not_allowed", "invalid_parameter", "rate_limited"]);
   });
 });
 

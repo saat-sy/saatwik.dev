@@ -1,0 +1,54 @@
+.page {
+  position: relative;
+  background: #000;
+  color: var(--ink);
+  min-height: 80dvh;
+  padding: 56px var(--gutter) 96px;
+  font-family: var(--font-barlow), sans-serif;
+}
+
+.sheet { max-width: 1240px; margin-inline: auto; }
+.intro { margin-bottom: 48px; padding-bottom: 28px; border-bottom: 1px solid var(--rule); }
+.intro h1 {
+  font-family: var(--font-martian), monospace;
+  font-size: clamp(2.4rem, 5.8vw, 4.8rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+.intro h1 span { color: var(--redline); }
+.intro > p { margin-top: 20px; max-width: 56ch; color: var(--ink-soft); font-size: 1.15rem; }
+
+.docs { max-width: 76ch; display: grid; gap: 48px; }
+.docs section { display: grid; gap: 16px; }
+.docs h2 {
+  font-family: var(--font-martian), monospace;
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-variation-settings: "wdth" 87.5;
+  color: var(--ink-soft);
+}
+.docs p { color: var(--ink-soft); font-size: 1.1rem; line-height: 1.8; }
+.docs a { color: var(--ink); text-decoration-line: underline; text-decoration-color: var(--rule); transition: color 180ms, text-decoration-color 180ms; }
+.docs a:hover { color: var(--redline); text-decoration-color: var(--redline); }
+.docs pre {
+  overflow-x: auto;
+  padding: 16px 20px;
+  border: 1px solid var(--rule);
+  font-family: var(--font-martian), monospace;
+  font-size: 0.7rem;
+  font-variation-settings: "wdth" 87.5;
+  line-height: 1.8;
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .intro { animation: arrive 500ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes arrive { from { transform: translateY(8px); } to { transform: translateY(0); } }
+}
+@media (max-width: 767px) {
+  .page { padding-top: 44px; padding-bottom: 64px; }
+  .intro { margin-bottom: 36px; }
+  .intro > p { font-size: 1rem; }
+  .docs p { font-size: 1.05rem; }
+}

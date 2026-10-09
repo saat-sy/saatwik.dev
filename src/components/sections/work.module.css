@@ -4,7 +4,8 @@
 .stagePanel { position: sticky; top: 96px; align-self: start; z-index: var(--z-content); background: var(--sheet); }
 /* Sleeves stack in one 4:3 frame, capped so the map still fits beside the line. */
 .covers { position: relative; aspect-ratio: 4 / 3; width: 100%; max-width: calc(min(400px, 46dvh) * 4 / 3); }
-.roleCover {
+/* Doubled selector: projects.module.css .cover (position: relative) must lose regardless of stylesheet order. */
+.covers .roleCover {
   position: absolute;
   inset: 0;
   opacity: 0;

@@ -384,6 +384,14 @@ export const projects: Project[] = [
         heading: "Using it",
         body: "Running hyprlander init stores your Gemini API key. After that, a request like hyprlander prompt “I’m having screen tearing issues” starts a conversation with your Hyprland setup.",
       },
+      {
+        heading: "What the agent can do",
+        body: "The agent is given three tools: read a file, write a file, and run a shell command. The write tool shows a diff of the change before it lands. It is built on Cobra for the command line and Google’s Go SDK for the Gemini API.",
+      },
+      {
+        heading: "Where it stands",
+        body: "The command-line structure, the init flow, API key storage, and the ReAct agent core are done. Still on the roadmap: safer config edits with rollback, a tool for researching the Hyprland docs, and integration with community configs and themes.",
+      },
     ],
   },
   {

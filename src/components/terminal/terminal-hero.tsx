@@ -128,7 +128,7 @@ export function TerminalHero() {
                 {person.name.toLowerCase()}
                 <span className="text-redline" aria-hidden>_</span>
               </h1>
-              <p className="mt-4 max-w-[46ch] font-sans text-lg text-ink-soft sm:text-2xl">{person.tagline}</p>
+              <p className="mt-4 max-w-[46ch] font-sans text-lg text-ink-soft sm:max-w-none sm:text-[clamp(1rem,2.4vw,1.5rem)] sm:text-nowrap">{person.tagline}</p>
             </div>
           </div>
           <div data-step>

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Barlow, Barlow_Condensed, IBM_Plex_Sans, Martian_Mono } from "next/font/google";
 import { Backdrop } from "@/components/backdrop";
 import { SiteFooter } from "@/components/site-footer";
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        <Analytics />
       </body>
     </html>
   );
